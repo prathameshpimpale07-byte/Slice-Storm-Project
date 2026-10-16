@@ -27,15 +27,15 @@ export function segmentIntersectsCircle(start, end, circle) {
 }
 
 export function sliceFruitsBySegment(fruits, start, end, slicedAt) {
-  let pointsEarned = 0;
+  const slicedFruits = [];
 
   fruits.forEach((fruit) => {
     if (fruit.sliced || !segmentIntersectsCircle(start, end, fruit)) return;
 
     fruit.sliced = true;
     fruit.slicedAt = slicedAt;
-    pointsEarned += fruit.points;
+    slicedFruits.push(fruit);
   });
 
-  return pointsEarned;
+  return slicedFruits;
 }

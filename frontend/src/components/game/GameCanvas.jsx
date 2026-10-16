@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createFruit } from "@/game/fruit-config";
 import { getDeltaSeconds, updateFruits } from "@/game/physics";
 import { sliceFruitsBySegment } from "@/game/collision";
+import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
 
 /* ══════════════════════════════════════════════════════════════════════════
    GameCanvas — Fruit spawning
@@ -27,6 +28,8 @@ const STATE = {
 const TRAIL_DURATION_MS = 240;
 const MAX_TRAIL_POINTS = 18;
 const SLICE_ANIMATION_DURATION_MS = 180;
+const SCORE_LABEL_DURATION_MS = 700;
+const COMBO_MESSAGE_DURATION_MS = 900;
 
 /* ── Background star particles for canvas ────────────────────────────────── */
 function createStars(count, w, h) {
@@ -58,12 +61,16 @@ export default function GameCanvas() {
   const loopRunningRef = useRef(false);
   const pointerActiveRef = useRef(false);
   const pointerTrailRef = useRef([]);
+  const scoreLabelsRef = useRef([]);
+  const comboMessageRef = useRef(null);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(1);
   const [lives, setLives] = useState(3);
+  const [totalSliced, setTotalSliced] = useState(0);
+  const [bestCombo, setBestCombo] = useState(1);
 
   /* ── Canvas resize logic ─────────────────────────────────────────────── */
   const resizeCanvas = useCallback(() => {
@@ -194,6 +201,44 @@ export default function GameCanvas() {
       });
     }
 
+    scoreLabelsRef.current = scoreLabelsRef.current.filter(
+      (label) => timestamp - label.createdAt < SCORE_LABEL_DURATION_MS
+    );
+    scoreLabelsRef.current.forEach((label) => {
+      const progress = (timestamp - label.createdAt) / SCORE_LABEL_DURATION_MS;
+      ctx.save();
+      ctx.globalAlpha = 1 - progress;
+      ctx.fillStyle = label.color;
+      ctx.shadowColor = label.color;
+      ctx.shadowBlur = 12;
+      ctx.font = "900 18px 'Exo 2', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(label.text, label.x, label.y - progress * 42);
+      ctx.restore();
+    });
+
+    if (comboMessageRef.current) {
+      const messageAge = timestamp - comboMessageRef.current.createdAt;
+      if (messageAge >= COMBO_MESSAGE_DURATION_MS) {
+        comboMessageRef.current = null;
+      } else {
+        const progress = messageAge / COMBO_MESSAGE_DURATION_MS;
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, (1 - progress) * 1.5);
+        ctx.fillStyle = "#39ff14";
+        ctx.shadowColor = "#39ff14";
+        ctx.shadowBlur = 18;
+        ctx.font = "900 30px 'Exo 2', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          comboMessageRef.current.text,
+          w / 2,
+          h * 0.35 - progress * 24
+        );
+        ctx.restore();
+      }
+    }
+
     // ── Draw subtle grid lines ───────────────────────────────────────
     ctx.strokeStyle = "rgba(0,245,255,0.03)";
     ctx.lineWidth = 0.5;
@@ -264,6 +309,31 @@ export default function GameCanvas() {
     ];
   };
 
+  const processSwipeSegment = (start, end) => {
+    const slicedFruits = sliceFruitsBySegment(
+      fruitsRef.current,
+      start,
+      end,
+      end.time
+    );
+    if (slicedFruits.length === 0) return;
+
+    const scoreResult = calculateSliceScore(slicedFruits, combo);
+    setScore((currentScore) => currentScore + scoreResult.totalPoints);
+    setCombo(scoreResult.nextCombo);
+    setTotalSliced((currentTotal) => currentTotal + slicedFruits.length);
+    setBestCombo((currentBest) => Math.max(currentBest, scoreResult.nextCombo));
+    scoreLabelsRef.current.push(
+      ...createScoreLabels(slicedFruits, scoreResult, end.time)
+    );
+    if (scoreResult.milestoneMessage) {
+      comboMessageRef.current = {
+        text: scoreResult.milestoneMessage,
+        createdAt: end.time,
+      };
+    }
+  };
+
   const handlePointerDown = (event) => {
     if (gameStateRef.current !== STATE.PLAYING) return;
     pointerActiveRef.current = true;
@@ -278,16 +348,7 @@ export default function GameCanvas() {
     const point = getCanvasPoint(event);
     if (!point) return;
     if (previousPoint) {
-      const pointsEarned = sliceFruitsBySegment(
-        fruitsRef.current,
-        previousPoint,
-        point,
-        point.time
-      );
-      if (pointsEarned > 0) {
-        setScore((currentScore) => currentScore + pointsEarned);
-        setCombo((currentCombo) => currentCombo + 1);
-      }
+      processSwipeSegment(previousPoint, point);
     }
     addPointerPoint(event);
   };
@@ -297,16 +358,7 @@ export default function GameCanvas() {
     const previousPoint = pointerTrailRef.current.at(-1);
     const point = getCanvasPoint(event);
     if (previousPoint && point) {
-      const pointsEarned = sliceFruitsBySegment(
-        fruitsRef.current,
-        previousPoint,
-        point,
-        point.time
-      );
-      if (pointsEarned > 0) {
-        setScore((currentScore) => currentScore + pointsEarned);
-        setCombo((currentCombo) => currentCombo + 1);
-      }
+      processSwipeSegment(previousPoint, point);
     }
     addPointerPoint(event);
     pointerActiveRef.current = false;
@@ -358,10 +410,14 @@ export default function GameCanvas() {
     setScore(0);
     setCombo(1);
     setLives(3);
+    setTotalSliced(0);
+    setBestCombo(1);
     fruitsRef.current = [];
     spawnTimerRef.current = 0;
     lastFrameRef.current = null;
     pointerTrailRef.current = [];
+    scoreLabelsRef.current = [];
+    comboMessageRef.current = null;
     setGameState(STATE.PLAYING);
   };
 
@@ -377,10 +433,14 @@ export default function GameCanvas() {
     setScore(0);
     setCombo(1);
     setLives(3);
+    setTotalSliced(0);
+    setBestCombo(1);
     fruitsRef.current = [];
     spawnTimerRef.current = 0;
     lastFrameRef.current = null;
     pointerTrailRef.current = [];
+    scoreLabelsRef.current = [];
+    comboMessageRef.current = null;
     setGameState(STATE.PLAYING);
   };
 
@@ -470,6 +530,29 @@ export default function GameCanvas() {
             </div>
           </div>
 
+          {/* Run stats */}
+          <div style={{ textAlign: "center", pointerEvents: "auto" }}>
+            <div style={{
+              fontSize: "0.65rem",
+              color: "#8892a4",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              fontWeight: 600,
+              marginBottom: "2px",
+            }}>
+              Sliced
+            </div>
+            <div style={{
+              fontFamily: "'Exo 2', sans-serif",
+              fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
+              fontWeight: 900,
+              color: "#ff8c00",
+              lineHeight: 1,
+            }}>
+              {totalSliced}
+            </div>
+          </div>
+
           {/* Combo */}
           <div style={{ textAlign: "center", pointerEvents: "auto" }}>
             <div style={{
@@ -491,6 +574,28 @@ export default function GameCanvas() {
               lineHeight: 1,
             }}>
               ×{combo}
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", pointerEvents: "auto" }}>
+            <div style={{
+              fontSize: "0.65rem",
+              color: "#8892a4",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              fontWeight: 600,
+              marginBottom: "2px",
+            }}>
+              Best
+            </div>
+            <div style={{
+              fontFamily: "'Exo 2', sans-serif",
+              fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
+              fontWeight: 900,
+              color: "#39ff14",
+              lineHeight: 1,
+            }}>
+              ×{bestCombo}
             </div>
           </div>
 
