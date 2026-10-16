@@ -2,29 +2,65 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-white/5">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <footer style={{
+      marginTop: "auto",
+      borderTop: "1px solid rgba(0,245,255,0.08)",
+      background: "rgba(8,12,23,0.6)",
+      backdropFilter: "blur(12px)",
+    }}>
+      <div style={{
+        maxWidth: "1100px",
+        margin: "0 auto",
+        padding: "2rem 1rem",
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+      }}>
         {/* Brand */}
-        <div className="flex items-center gap-2">
-          <span className="text-lg">⚡</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontSize: "1.1rem", filter: "drop-shadow(0 0 6px rgba(0,245,255,0.3))" }}>⚡</span>
           <span
-            className="grad-text font-black text-base tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
+            className="grad-text"
+            style={{
+              fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)",
+              fontWeight: 900,
+              fontSize: "0.9rem",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+            }}
           >
             Slice Storm
           </span>
         </div>
 
         {/* Copy */}
-        <p className="text-[#8892a4] text-xs text-center">
+        <p style={{ color: "#8892a4", fontSize: "0.72rem", textAlign: "center" }}>
           VELoop Rewards · Full Stack Internship Project
         </p>
 
         {/* Links */}
-        <nav className="flex gap-5 text-xs text-[#8892a4]">
-          <Link href="/leaderboard" className="hover:text-[#00f5ff] transition-colors">Leaderboard</Link>
-          <Link href="/login"       className="hover:text-[#00f5ff] transition-colors">Login</Link>
-          <Link href="/register"    className="hover:text-[#00f5ff] transition-colors">Register</Link>
+        <nav style={{ display: "flex", gap: "1.25rem", fontSize: "0.75rem" }}>
+          {[
+            { href: "/leaderboard", label: "Leaderboard" },
+            { href: "/login", label: "Login" },
+            { href: "/register", label: "Register" },
+          ].map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              style={{
+                color: "#8892a4",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => { e.target.style.color = "#00f5ff"; }}
+              onMouseLeave={(e) => { e.target.style.color = "#8892a4"; }}
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </footer>
