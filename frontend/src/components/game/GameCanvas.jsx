@@ -6,6 +6,7 @@ import { createFruit } from "@/game/fruit-config";
 import { getDeltaSeconds, updateFruits } from "@/game/physics";
 import { sliceFruitsBySegment } from "@/game/collision";
 import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
+import { createBurst, drawParticles, updateParticles } from "@/game/particles";
 
 /* ══════════════════════════════════════════════════════════════════════════
    GameCanvas — Fruit spawning
@@ -30,6 +31,7 @@ const MAX_TRAIL_POINTS = 18;
 const SLICE_ANIMATION_DURATION_MS = 180;
 const SCORE_LABEL_DURATION_MS = 700;
 const COMBO_MESSAGE_DURATION_MS = 900;
+const SCREEN_FLASH_DURATION_MS = 120;
 
 /* ── Background star particles for canvas ────────────────────────────────── */
 function createStars(count, w, h) {
@@ -63,6 +65,8 @@ export default function GameCanvas() {
   const pointerTrailRef = useRef([]);
   const scoreLabelsRef = useRef([]);
   const comboMessageRef = useRef(null);
+  const particlesRef = useRef([]);
+  const screenFlashRef = useRef(0);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
@@ -201,6 +205,13 @@ export default function GameCanvas() {
       });
     }
 
+    particlesRef.current = updateParticles(
+      particlesRef.current,
+      deltaSeconds,
+      timestamp
+    );
+    drawParticles(ctx, particlesRef.current, timestamp);
+
     scoreLabelsRef.current = scoreLabelsRef.current.filter(
       (label) => timestamp - label.createdAt < SCORE_LABEL_DURATION_MS
     );
@@ -237,6 +248,14 @@ export default function GameCanvas() {
         );
         ctx.restore();
       }
+    }
+
+    if (screenFlashRef.current > timestamp) {
+      ctx.save();
+      ctx.globalAlpha = (screenFlashRef.current - timestamp) / SCREEN_FLASH_DURATION_MS * 0.18;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
     }
 
     // ── Draw subtle grid lines ───────────────────────────────────────
@@ -319,6 +338,13 @@ export default function GameCanvas() {
     if (slicedFruits.length === 0) return;
 
     const scoreResult = calculateSliceScore(slicedFruits, combo);
+    slicedFruits.forEach((fruit) => {
+      particlesRef.current.push(
+        ...createBurst(fruit.x, fruit.y, fruit.color, end.time)
+      );
+    });
+    particlesRef.current = particlesRef.current.slice(-240);
+    screenFlashRef.current = end.time + SCREEN_FLASH_DURATION_MS;
     setScore((currentScore) => currentScore + scoreResult.totalPoints);
     setCombo(scoreResult.nextCombo);
     setTotalSliced((currentTotal) => currentTotal + slicedFruits.length);
@@ -418,6 +444,8 @@ export default function GameCanvas() {
     pointerTrailRef.current = [];
     scoreLabelsRef.current = [];
     comboMessageRef.current = null;
+    particlesRef.current = [];
+    screenFlashRef.current = 0;
     setGameState(STATE.PLAYING);
   };
 
@@ -441,6 +469,8 @@ export default function GameCanvas() {
     pointerTrailRef.current = [];
     scoreLabelsRef.current = [];
     comboMessageRef.current = null;
+    particlesRef.current = [];
+    screenFlashRef.current = 0;
     setGameState(STATE.PLAYING);
   };
 
