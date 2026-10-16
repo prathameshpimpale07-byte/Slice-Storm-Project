@@ -9,6 +9,15 @@ import { getDeltaSeconds, updateFruit, updateFruitsWithMisses } from "@/game/phy
 import { hitBombsBySegment, sliceFruitsBySegment } from "@/game/collision";
 import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
 import { createBurst, drawParticles, updateParticles } from "@/game/particles";
+import {
+  getAudioSettings,
+  playSound,
+  resumeAudio,
+  setMusicEnabled,
+  setSoundEffectsEnabled,
+  startMusic,
+  stopMusic,
+} from "@/game/audio";
 
 /* ══════════════════════════════════════════════════════════════════════════
    GameCanvas — Fruit spawning
@@ -84,6 +93,7 @@ export default function GameCanvas() {
   const [misses, setMisses] = useState(0);
   const [totalSliced, setTotalSliced] = useState(0);
   const [bestCombo, setBestCombo] = useState(1);
+  const [audioSettings, setAudioSettings] = useState(getAudioSettings);
 
   /* ── Canvas resize logic ─────────────────────────────────────────────── */
   const resizeCanvas = useCallback(() => {
@@ -390,6 +400,7 @@ export default function GameCanvas() {
       end.time
     );
     if (hitBombs.length > 0) {
+      playSound("bomb");
       const nextLives = Math.max(0, livesRef.current - hitBombs.length);
       livesRef.current = nextLives;
       setLives(nextLives);
@@ -411,6 +422,8 @@ export default function GameCanvas() {
     if (slicedFruits.length === 0) return;
 
     const scoreResult = calculateSliceScore(slicedFruits, combo);
+    playSound("slice");
+    if (scoreResult.milestoneMessage) playSound("combo");
     slicedFruits.forEach((fruit) => {
       particlesRef.current.push(
         ...createBurst(fruit.x, fruit.y, fruit.color, end.time)
@@ -475,6 +488,7 @@ export default function GameCanvas() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      stopMusic();
       loopRunningRef.current = false;
       if (animRef.current !== null) cancelAnimationFrame(animRef.current);
       animRef.current = null;
@@ -487,6 +501,7 @@ export default function GameCanvas() {
     gameStateRef.current = gameState;
 
     if (gameState === STATE.PLAYING) {
+      startMusic();
       loopRunningRef.current = false;
       if (animRef.current !== null) cancelAnimationFrame(animRef.current);
       animRef.current = null;
@@ -496,6 +511,8 @@ export default function GameCanvas() {
         drawFrameRef.current?.(timestamp);
       });
     } else {
+      stopMusic();
+      if (gameState === STATE.GAME_OVER) playSound("gameOver");
       loopRunningRef.current = false;
       if (animRef.current !== null) cancelAnimationFrame(animRef.current);
       animRef.current = null;
@@ -506,6 +523,8 @@ export default function GameCanvas() {
 
   /* ── Game state handlers ─────────────────────────────────────────────── */
   const handleStart = () => {
+    resumeAudio();
+    playSound("start");
     setScore(0);
     setCombo(1);
     setLives(3);
@@ -528,14 +547,19 @@ export default function GameCanvas() {
   };
 
   const handlePause = () => {
+    playSound("button");
     setGameState(STATE.PAUSED);
   };
 
   const handleResume = () => {
+    resumeAudio();
+    playSound("button");
     setGameState(STATE.PLAYING);
   };
 
   const handleRestart = () => {
+    resumeAudio();
+    playSound("start");
     setScore(0);
     setCombo(1);
     setLives(3);
@@ -558,6 +582,7 @@ export default function GameCanvas() {
   };
 
   const handleQuit = () => {
+    playSound("button");
     setGameState(STATE.MENU);
   };
 
@@ -565,6 +590,26 @@ export default function GameCanvas() {
     gameStateRef.current = STATE.GAME_OVER;
     loopRunningRef.current = false;
     setGameState(STATE.GAME_OVER);
+  };
+
+  const toggleSoundEffects = () => {
+    const enabled = !audioSettings.soundEffectsEnabled;
+    setSoundEffectsEnabled(enabled);
+    setAudioSettings((current) => ({ ...current, soundEffectsEnabled: enabled }));
+    if (enabled) {
+      resumeAudio();
+      playSound("button");
+    }
+  };
+
+  const toggleMusic = () => {
+    const enabled = !audioSettings.musicEnabled;
+    setMusicEnabled(enabled);
+    setAudioSettings((current) => ({ ...current, musicEnabled: enabled }));
+    if (enabled) {
+      resumeAudio();
+      startMusic();
+    }
   };
 
   /* ═══════════════════════════════════════════════════════════════════════ */
@@ -829,6 +874,20 @@ export default function GameCanvas() {
             </OverlayButton>
             <OverlayButton as={Link} href="/" outline>
               ← Back to Home
+            </OverlayButton>
+          </div>
+          <div style={{
+            display: "flex",
+            gap: "0.5rem",
+            justifyContent: "center",
+            width: "100%",
+            marginTop: "1.25rem",
+          }}>
+            <OverlayButton onClick={toggleSoundEffects} outline>
+              {audioSettings.soundEffectsEnabled ? "🔊 SFX On" : "🔇 SFX Off"}
+            </OverlayButton>
+            <OverlayButton onClick={toggleMusic} outline>
+              {audioSettings.musicEnabled ? "🎵 Music On" : "🎵 Music Off"}
             </OverlayButton>
           </div>
         </Overlay>
