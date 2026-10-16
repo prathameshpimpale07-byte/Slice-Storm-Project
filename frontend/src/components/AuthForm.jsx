@@ -74,7 +74,10 @@ export default function AuthForm({ mode }) {
       <div className="auth-orb auth-orb-cyan" />
       <div className="auth-orb auth-orb-magenta" />
       <section className="glass auth-card" aria-labelledby="auth-title">
-        <Link href="/" className="auth-brand grad-text">⚡ SLICE STORM</Link>
+        <Link href="/" className="auth-brand" aria-label="Slice Storm home">
+          <span className="auth-brand-mark">⚡</span>
+          <span className="grad-text">SLICE STORM</span>
+        </Link>
         <p className="auth-kicker">{isRegister ? "CREATE YOUR PLAYER PROFILE" : "WELCOME BACK, PLAYER"}</p>
         <h1 id="auth-title">{isRegister ? "Join the storm." : "Ready to slice?"}</h1>
         <p className="auth-subtitle">
@@ -86,7 +89,7 @@ export default function AuthForm({ mode }) {
         {error && <div className="auth-alert auth-alert-error" role="alert">{error}</div>}
         {success && <div className="auth-alert auth-alert-success" role="status">{success}</div>}
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {isRegister && (
             <label className="auth-field">
               <span>Display name</span>
