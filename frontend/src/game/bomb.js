@@ -11,14 +11,14 @@ function randomBetween(min, max) {
   return min + Math.random() * (max - min);
 }
 
-export function createBomb(canvasWidth, canvasHeight) {
+export function createBomb(canvasWidth, canvasHeight, speedMultiplier = 1) {
   return {
     id: `bomb-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     type: "bomb",
     x: randomBetween(BOMB_CONFIG.radius, Math.max(BOMB_CONFIG.radius, canvasWidth - BOMB_CONFIG.radius)),
     y: canvasHeight + BOMB_CONFIG.radius,
-    vx: randomBetween(BOMB_CONFIG.horizontalSpeed.min, BOMB_CONFIG.horizontalSpeed.max),
-    vy: -randomBetween(BOMB_CONFIG.launchSpeed.min, BOMB_CONFIG.launchSpeed.max),
+    vx: randomBetween(BOMB_CONFIG.horizontalSpeed.min, BOMB_CONFIG.horizontalSpeed.max) * speedMultiplier,
+    vy: -randomBetween(BOMB_CONFIG.launchSpeed.min, BOMB_CONFIG.launchSpeed.max) * speedMultiplier,
     radius: BOMB_CONFIG.radius,
     rotation: randomBetween(-Math.PI, Math.PI),
     rotationSpeed: randomBetween(-2.5, 2.5),

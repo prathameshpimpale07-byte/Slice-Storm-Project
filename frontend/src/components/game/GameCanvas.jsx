@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { createFruit } from "@/game/fruit-config";
 import { createBomb } from "@/game/bomb";
+import { getDifficulty } from "@/game/difficulty";
 import { getDeltaSeconds, updateFruit, updateFruitsWithMisses } from "@/game/physics";
 import { hitBombsBySegment, sliceFruitsBySegment } from "@/game/collision";
 import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
@@ -73,6 +74,7 @@ export default function GameCanvas() {
   const screenFlashRef = useRef(0);
   const livesRef = useRef(3);
   const missesRef = useRef(0);
+  const elapsedGameSecondsRef = useRef(0);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
@@ -178,11 +180,20 @@ export default function GameCanvas() {
     }
 
     if (gameStateRef.current === STATE.PLAYING) {
+      elapsedGameSecondsRef.current += deltaSeconds;
+      const difficulty = getDifficulty(elapsedGameSecondsRef.current);
       spawnTimerRef.current -= deltaSeconds;
       if (spawnTimerRef.current <= 0) {
-        fruitsRef.current.push(createFruit(w, h));
-        if (Math.random() < 0.18) bombsRef.current.push(createBomb(w, h));
-        spawnTimerRef.current = 0.65 + Math.random() * 0.45;
+        if (fruitsRef.current.length < difficulty.maxFruits) {
+          fruitsRef.current.push(createFruit(w, h, difficulty.speedMultiplier));
+        }
+        if (
+          Math.random() < difficulty.bombChance
+          && bombsRef.current.length < Math.ceil(difficulty.maxFruits / 3)
+        ) {
+          bombsRef.current.push(createBomb(w, h, difficulty.speedMultiplier));
+        }
+        spawnTimerRef.current = difficulty.spawnInterval * (0.8 + Math.random() * 0.35);
       }
 
       const fruitUpdate = updateFruitsWithMisses(fruitsRef.current, deltaSeconds, h);
@@ -501,6 +512,7 @@ export default function GameCanvas() {
     setMisses(0);
     livesRef.current = 3;
     missesRef.current = 0;
+    elapsedGameSecondsRef.current = 0;
     setTotalSliced(0);
     setBestCombo(1);
     fruitsRef.current = [];
@@ -530,6 +542,7 @@ export default function GameCanvas() {
     setMisses(0);
     livesRef.current = 3;
     missesRef.current = 0;
+    elapsedGameSecondsRef.current = 0;
     setTotalSliced(0);
     setBestCombo(1);
     fruitsRef.current = [];

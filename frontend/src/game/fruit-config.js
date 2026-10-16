@@ -92,7 +92,7 @@ function chooseFruitType() {
   return fruitEntries[fruitEntries.length - 1][0];
 }
 
-export function createFruit(canvasWidth, canvasHeight) {
+export function createFruit(canvasWidth, canvasHeight, speedMultiplier = 1) {
   const type = chooseFruitType();
   const config = FRUIT_TYPES[type];
 
@@ -101,8 +101,8 @@ export function createFruit(canvasWidth, canvasHeight) {
     type,
     x: randomBetween(config.radius, Math.max(config.radius, canvasWidth - config.radius)),
     y: canvasHeight + config.radius,
-    vx: randomBetween(config.horizontalSpeed.min, config.horizontalSpeed.max),
-    vy: -randomBetween(config.launchSpeed.min, config.launchSpeed.max),
+    vx: randomBetween(config.horizontalSpeed.min, config.horizontalSpeed.max) * speedMultiplier,
+    vy: -randomBetween(config.launchSpeed.min, config.launchSpeed.max) * speedMultiplier,
     radius: config.radius,
     rotation: randomBetween(-Math.PI, Math.PI),
     rotationSpeed: randomBetween(-3.5, 3.5),
