@@ -192,7 +192,7 @@ export default function HomePage() {
         ))}
 
         {/* Hero content */}
-        <div className="slide-up" style={{ position: "relative", zIndex: 10, maxWidth: "720px", margin: "0 auto" }}>
+        <div className="slide-up hero-content" style={{ position: "relative", zIndex: 10, maxWidth: "720px", margin: "0 auto" }}>
           {/* Badge */}
           <div
             className="slide-up-delay-1"
@@ -337,7 +337,7 @@ export default function HomePage() {
       <div className="divider-glow" />
 
       {/* ───────────────────────── FEATURES ─────────────────────── */}
-      <section style={{ padding: "5rem 1rem" }}>
+      <section className="landing-section features-section" style={{ padding: "5rem 1rem" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div className="reveal" style={{ textAlign: "center", marginBottom: "3rem" }}>
             <h2
@@ -364,7 +364,7 @@ export default function HomePage() {
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
-                className="glass card-hover reveal"
+                className="glass card-hover feature-card reveal"
                 style={{
                   padding: "1.75rem",
                   transitionDelay: `${i * 0.1}s`,
@@ -408,6 +408,7 @@ export default function HomePage() {
 
       {/* ───────────────────────── HOW TO PLAY ──────────────────── */}
       <section
+        className="landing-section how-section"
         style={{
           padding: "5rem 1rem",
           background: "linear-gradient(180deg, #0a0e1a 0%, #0d1628 50%, #0a0e1a 100%)",
@@ -441,7 +442,7 @@ export default function HomePage() {
             {STEPS.map((s, i) => (
               <div
                 key={s.n}
-                className="reveal"
+                className="step-card reveal"
                 style={{
                   display: "flex",
                   gap: "1.25rem",
@@ -487,7 +488,7 @@ export default function HomePage() {
       <div className="divider-glow" />
 
       {/* ───────────────────────── GAME MODES ───────────────────── */}
-      <section style={{ padding: "5rem 1rem" }}>
+      <section className="landing-section mode-section" style={{ padding: "5rem 1rem" }}>
         <div style={{ maxWidth: "700px", margin: "0 auto" }}>
           <div className="reveal" style={{ textAlign: "center", marginBottom: "2.5rem" }}>
             <h2
@@ -502,7 +503,7 @@ export default function HomePage() {
               Game Mode
             </h2>
           </div>
-          <div className="glass-glow reveal" style={{ padding: "2.5rem", textAlign: "center" }}>
+          <div className="glass-glow mode-card reveal" style={{ padding: "2.5rem", textAlign: "center" }}>
             <div style={{
               position: "relative",
               zIndex: 1,
@@ -569,7 +570,7 @@ export default function HomePage() {
       <div className="divider-glow" />
 
       {/* ───────────────────────── CTA BANNER ───────────────────── */}
-      <section style={{ padding: "5rem 1rem" }}>
+      <section className="landing-section cta-section" style={{ padding: "5rem 1rem" }}>
         <div
           className="glass-glow reveal"
           style={{
