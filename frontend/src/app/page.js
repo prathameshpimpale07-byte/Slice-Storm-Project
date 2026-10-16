@@ -141,6 +141,7 @@ export default function HomePage() {
 
       {/* ───────────────────────── HERO ──────────────────────────── */}
       <section
+        className="landing-hero"
         style={{
           position: "relative",
           flex: "1",
@@ -355,7 +356,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div style={{
+          <div className="feature-grid" style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
             gap: "1.25rem",
@@ -432,7 +433,7 @@ export default function HomePage() {
             <p style={{ color: "#8892a4", fontSize: "0.9rem" }}>Four simple steps to the top of the leaderboard.</p>
           </div>
 
-          <div style={{
+          <div className="steps-grid" style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
             gap: "2rem",
