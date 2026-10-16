@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { createFruit } from "@/game/fruit-config";
 import { getDeltaSeconds, updateFruits } from "@/game/physics";
+import { sliceFruitsBySegment } from "@/game/collision";
 
 /* ══════════════════════════════════════════════════════════════════════════
    GameCanvas — Fruit spawning
@@ -25,6 +26,7 @@ const STATE = {
 
 const TRAIL_DURATION_MS = 240;
 const MAX_TRAIL_POINTS = 18;
+const SLICE_ANIMATION_DURATION_MS = 180;
 
 /* ── Background star particles for canvas ────────────────────────────────── */
 function createStars(count, w, h) {
@@ -164,12 +166,24 @@ export default function GameCanvas() {
         spawnTimerRef.current = 0.65 + Math.random() * 0.45;
       }
 
-      fruitsRef.current = updateFruits(fruitsRef.current, deltaSeconds, h);
+      fruitsRef.current = updateFruits(fruitsRef.current, deltaSeconds, h)
+        .filter((fruit) => (
+          !fruit.sliced
+          || timestamp - fruit.slicedAt < SLICE_ANIMATION_DURATION_MS
+        ));
 
       fruitsRef.current.forEach((fruit) => {
         ctx.save();
         ctx.translate(fruit.x, fruit.y);
         ctx.rotate(fruit.rotation);
+        if (fruit.sliced) {
+          const progress = Math.min(
+            1,
+            (timestamp - fruit.slicedAt) / SLICE_ANIMATION_DURATION_MS
+          );
+          ctx.globalAlpha = 1 - progress;
+          ctx.scale(1 + progress * 0.45, 1 + progress * 0.45);
+        }
         ctx.shadowColor = fruit.color;
         ctx.shadowBlur = 16;
         ctx.font = `${fruit.radius * 2}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
@@ -253,17 +267,47 @@ export default function GameCanvas() {
   const handlePointerDown = (event) => {
     if (gameStateRef.current !== STATE.PLAYING) return;
     pointerActiveRef.current = true;
+    pointerTrailRef.current = [];
     event.currentTarget.setPointerCapture(event.pointerId);
     addPointerPoint(event);
   };
 
   const handlePointerMove = (event) => {
     if (!pointerActiveRef.current) return;
+    const previousPoint = pointerTrailRef.current.at(-1);
+    const point = getCanvasPoint(event);
+    if (!point) return;
+    if (previousPoint) {
+      const pointsEarned = sliceFruitsBySegment(
+        fruitsRef.current,
+        previousPoint,
+        point,
+        point.time
+      );
+      if (pointsEarned > 0) {
+        setScore((currentScore) => currentScore + pointsEarned);
+        setCombo((currentCombo) => currentCombo + 1);
+      }
+    }
     addPointerPoint(event);
   };
 
   const handlePointerEnd = (event) => {
     if (!pointerActiveRef.current) return;
+    const previousPoint = pointerTrailRef.current.at(-1);
+    const point = getCanvasPoint(event);
+    if (previousPoint && point) {
+      const pointsEarned = sliceFruitsBySegment(
+        fruitsRef.current,
+        previousPoint,
+        point,
+        point.time
+      );
+      if (pointsEarned > 0) {
+        setScore((currentScore) => currentScore + pointsEarned);
+        setCombo((currentCombo) => currentCombo + 1);
+      }
+    }
     addPointerPoint(event);
     pointerActiveRef.current = false;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
