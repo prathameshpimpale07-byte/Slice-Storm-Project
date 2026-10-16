@@ -1,4 +1,5 @@
 import { Exo_2, Inter } from "next/font/google";
+import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
 const exo2 = Exo_2({
@@ -25,7 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${exo2.variable} ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-[#0a0e1a] text-white antialiased">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

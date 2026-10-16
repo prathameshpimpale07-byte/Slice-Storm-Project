@@ -419,6 +419,62 @@ body  {
   box-shadow: 0 0 0 4px rgba(0,245,255,.1), 0 0 20px rgba(0,245,255,.08);
 }
 
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1rem;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(0,245,255,.08), transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(255,0,110,.08), transparent 50%),
+    var(--bg);
+}
+.auth-card {
+  width: min(100%, 460px);
+  padding: 2.5rem;
+  z-index: 1;
+}
+.auth-brand {
+  display: inline-block;
+  font-family: "Exo 2", sans-serif;
+  font-size: .85rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-decoration: none;
+}
+.auth-kicker {
+  color: var(--cyan);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  margin-top: 2.4rem;
+}
+.auth-card h1 {
+  font-family: "Exo 2", sans-serif;
+  font-size: clamp(2rem, 7vw, 2.8rem);
+  line-height: 1.05;
+  margin: .45rem 0 .75rem;
+}
+.auth-subtitle { color: var(--muted); font-size: .9rem; line-height: 1.6; margin-bottom: 1.7rem; }
+.auth-field { display: block; margin-bottom: 1.1rem; }
+.auth-field > span { display: block; color: #d6deed; font-size: .78rem; font-weight: 600; margin-bottom: .45rem; }
+.auth-field small { display: block; color: #ff789f; font-size: .72rem; margin-top: .35rem; }
+.auth-submit { width: 100%; margin-top: .45rem; }
+.auth-submit:disabled, .nav-action-btn:disabled { cursor: wait; opacity: .65; }
+.auth-alert { border-radius: 10px; font-size: .78rem; line-height: 1.45; margin-bottom: 1rem; padding: .75rem .9rem; }
+.auth-alert-error { background: rgba(255,0,110,.1); border: 1px solid rgba(255,0,110,.35); color: #ff9fbd; }
+.auth-alert-success { background: rgba(57,255,20,.08); border: 1px solid rgba(57,255,20,.3); color: #aaff9a; }
+.auth-switch { color: var(--muted); font-size: .78rem; margin-top: 1.6rem; text-align: center; }
+.auth-switch a, .auth-back { color: var(--cyan); text-decoration: none; }
+.auth-back { display: block; font-size: .75rem; margin-top: 1.2rem; text-align: center; }
+.auth-orb { border-radius: 50%; filter: blur(70px); height: 260px; opacity: .35; pointer-events: none; position: absolute; width: 260px; }
+.auth-orb-cyan { background: var(--cyan); left: -130px; top: 15%; }
+.auth-orb-magenta { background: var(--magenta); bottom: 5%; right: -130px; }
+.nav-action-btn { border-width: 1px; cursor: pointer; font-size: .75rem; padding: .45rem .85rem; }
+
 /* ── Canvas bg (game) ────────────────────────────────────────────────────── */
 .game-bg {
   background: radial-gradient(ellipse at 30% 30%, rgba(0,245,255,.06) 0%, transparent 55%),
@@ -455,6 +511,10 @@ body  {
   .landing-hero {
     min-height: calc(100svh - 65px);
     padding: 4.5rem 1rem 3.5rem !important;
+  }
+
+  @media (max-width: 480px) {
+    .auth-card { padding: 2rem 1.25rem; }
   }
 
   .feature-grid,

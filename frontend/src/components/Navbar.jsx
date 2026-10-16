@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -13,7 +14,23 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { user, loading, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+      setOpen(false);
+    }
+  }
+
+  const links = user
+    ? [{ href: "/play", label: "Play" }, { href: "/leaderboard", label: "Leaderboard" }]
+    : NAV_LINKS;
 
   return (
     <header className="navbar">
@@ -45,7 +62,7 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <nav style={{ display: "flex", alignItems: "center", gap: "1.5rem" }} className="nav-desktop">
-          {NAV_LINKS.map((l) => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -63,9 +80,18 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link href="/register" className="btn-primary" style={{ padding: "0.5rem 1.2rem", fontSize: "0.8rem" }}>
-            Play Free
-          </Link>
+          {!loading && (user ? (
+            <>
+              <span style={{ color: "#8892a4", fontSize: "0.8rem" }}>Hi, {user.name}</span>
+              <button type="button" onClick={handleLogout} disabled={loggingOut} className="btn-outline nav-action-btn">
+                {loggingOut ? "Signing out..." : "Logout"}
+              </button>
+            </>
+          ) : (
+            <Link href="/register" className="btn-primary" style={{ padding: "0.5rem 1.2rem", fontSize: "0.8rem" }}>
+              Play Free
+            </Link>
+          ))}
         </nav>
 
         {/* Mobile hamburger */}
@@ -110,7 +136,7 @@ export default function Navbar() {
             gap: "0.5rem",
           }}
         >
-          {NAV_LINKS.map((l) => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -128,14 +154,20 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link
-            href="/register"
-            onClick={() => setOpen(false)}
-            className="btn-primary"
-            style={{ width: "100%", textAlign: "center", fontSize: "0.85rem", marginTop: "0.5rem" }}
-          >
-            Play Free
-          </Link>
+          {!loading && (user ? (
+            <button type="button" onClick={handleLogout} disabled={loggingOut} className="btn-outline nav-action-btn">
+              {loggingOut ? "Signing out..." : "Logout"}
+            </button>
+          ) : (
+            <Link
+              href="/register"
+              onClick={() => setOpen(false)}
+              className="btn-primary"
+              style={{ width: "100%", textAlign: "center", fontSize: "0.85rem", marginTop: "0.5rem" }}
+            >
+              Play Free
+            </Link>
+          ))}
         </div>
       )}
 
