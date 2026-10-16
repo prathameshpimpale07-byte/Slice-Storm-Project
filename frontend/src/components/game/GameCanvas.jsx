@@ -2,9 +2,10 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { createFruit, updateFruit } from "@/game/fruit-config";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   GameCanvas — Day 4
+   GameCanvas — Fruit spawning
    ─────────────────
    • Client component with a full-screen HTML5 canvas
    • Canvas auto-resizes to its container
@@ -43,6 +44,10 @@ export default function GameCanvas() {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const starsRef = useRef([]);
+  const fruitsRef = useRef([]);
+  const lastFrameRef = useRef(null);
+  const spawnTimerRef = useRef(0);
+  const drawFrameRef = useRef(null);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
@@ -79,6 +84,10 @@ export default function GameCanvas() {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.width / dpr;
     const h = canvas.height / dpr;
+    const deltaSeconds = lastFrameRef.current === null
+      ? 0
+      : Math.min((timestamp - lastFrameRef.current) / 1000, 0.05);
+    lastFrameRef.current = timestamp;
 
     // Save and reset transform
     ctx.save();
@@ -114,6 +123,32 @@ export default function GameCanvas() {
       ctx.fillStyle = `rgba(200,220,255,${s.alpha})`;
       ctx.fill();
     });
+
+    if (gameState === STATE.PLAYING) {
+      spawnTimerRef.current -= deltaSeconds;
+      if (spawnTimerRef.current <= 0) {
+        fruitsRef.current.push(createFruit(w, h));
+        spawnTimerRef.current = 0.65 + Math.random() * 0.45;
+      }
+
+      fruitsRef.current.forEach((fruit) => updateFruit(fruit, deltaSeconds));
+      fruitsRef.current = fruitsRef.current.filter(
+        (fruit) => fruit.y - fruit.radius < h + fruit.radius
+      );
+
+      fruitsRef.current.forEach((fruit) => {
+        ctx.save();
+        ctx.translate(fruit.x, fruit.y);
+        ctx.rotate(fruit.rotation);
+        ctx.shadowColor = fruit.color;
+        ctx.shadowBlur = 16;
+        ctx.font = `${fruit.radius * 2}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(fruit.emoji, 0, 0);
+        ctx.restore();
+      });
+    }
 
     // ── Draw subtle grid lines ───────────────────────────────────────
     ctx.strokeStyle = "rgba(0,245,255,0.03)";
@@ -156,13 +191,16 @@ export default function GameCanvas() {
     ctx.restore();
 
     timeRef.current = timestamp;
-    animRef.current = requestAnimationFrame(drawFrame);
+    animRef.current = requestAnimationFrame((nextTimestamp) => {
+      drawFrameRef.current?.(nextTimestamp);
+    });
   }, [gameState]);
 
   /* ── Setup / Teardown ────────────────────────────────────────────────── */
   useEffect(() => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
+    drawFrameRef.current = drawFrame;
 
     // Start animation loop
     animRef.current = requestAnimationFrame(drawFrame);
@@ -170,6 +208,8 @@ export default function GameCanvas() {
     return () => {
       window.removeEventListener("resize", resizeCanvas);
       if (animRef.current) cancelAnimationFrame(animRef.current);
+      drawFrameRef.current = null;
+      lastFrameRef.current = null;
     };
   }, [resizeCanvas, drawFrame]);
 
@@ -178,6 +218,9 @@ export default function GameCanvas() {
     setScore(0);
     setCombo(1);
     setLives(3);
+    fruitsRef.current = [];
+    spawnTimerRef.current = 0;
+    lastFrameRef.current = null;
     setGameState(STATE.PLAYING);
   };
 
@@ -193,6 +236,9 @@ export default function GameCanvas() {
     setScore(0);
     setCombo(1);
     setLives(3);
+    fruitsRef.current = [];
+    spawnTimerRef.current = 0;
+    lastFrameRef.current = null;
     setGameState(STATE.PLAYING);
   };
 
