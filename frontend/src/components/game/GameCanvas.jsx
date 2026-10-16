@@ -2,7 +2,8 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { createFruit, updateFruit } from "@/game/fruit-config";
+import { createFruit } from "@/game/fruit-config";
+import { getDeltaSeconds, updateFruits } from "@/game/physics";
 
 /* ══════════════════════════════════════════════════════════════════════════
    GameCanvas — Fruit spawning
@@ -48,6 +49,8 @@ export default function GameCanvas() {
   const lastFrameRef = useRef(null);
   const spawnTimerRef = useRef(0);
   const drawFrameRef = useRef(null);
+  const gameStateRef = useRef(STATE.MENU);
+  const loopRunningRef = useRef(false);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
@@ -84,9 +87,7 @@ export default function GameCanvas() {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.width / dpr;
     const h = canvas.height / dpr;
-    const deltaSeconds = lastFrameRef.current === null
-      ? 0
-      : Math.min((timestamp - lastFrameRef.current) / 1000, 0.05);
+    const deltaSeconds = getDeltaSeconds(timestamp, lastFrameRef.current);
     lastFrameRef.current = timestamp;
 
     // Save and reset transform
@@ -124,17 +125,14 @@ export default function GameCanvas() {
       ctx.fill();
     });
 
-    if (gameState === STATE.PLAYING) {
+    if (gameStateRef.current === STATE.PLAYING) {
       spawnTimerRef.current -= deltaSeconds;
       if (spawnTimerRef.current <= 0) {
         fruitsRef.current.push(createFruit(w, h));
         spawnTimerRef.current = 0.65 + Math.random() * 0.45;
       }
 
-      fruitsRef.current.forEach((fruit) => updateFruit(fruit, deltaSeconds));
-      fruitsRef.current = fruitsRef.current.filter(
-        (fruit) => fruit.y - fruit.radius < h + fruit.radius
-      );
+      fruitsRef.current = updateFruits(fruitsRef.current, deltaSeconds, h);
 
       fruitsRef.current.forEach((fruit) => {
         ctx.save();
@@ -168,7 +166,7 @@ export default function GameCanvas() {
     }
 
     // ── Draw center "Ready" text when playing (placeholder) ──────────
-    if (gameState === STATE.PLAYING) {
+    if (gameStateRef.current === STATE.PLAYING) {
       const pulse = Math.sin(timestamp * 0.002) * 0.15 + 0.85;
       ctx.globalAlpha = 0.08 * pulse;
       ctx.font = `bold ${Math.min(w * 0.12, 90)}px 'Exo 2', sans-serif`;
@@ -191,27 +189,50 @@ export default function GameCanvas() {
     ctx.restore();
 
     timeRef.current = timestamp;
-    animRef.current = requestAnimationFrame((nextTimestamp) => {
-      drawFrameRef.current?.(nextTimestamp);
-    });
-  }, [gameState]);
+    if (loopRunningRef.current) {
+      animRef.current = requestAnimationFrame((nextTimestamp) => {
+        drawFrameRef.current?.(nextTimestamp);
+      });
+    }
+  }, []);
 
   /* ── Setup / Teardown ────────────────────────────────────────────────── */
   useEffect(() => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
     drawFrameRef.current = drawFrame;
-
-    // Start animation loop
-    animRef.current = requestAnimationFrame(drawFrame);
+    drawFrame(performance.now());
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
-      if (animRef.current) cancelAnimationFrame(animRef.current);
+      loopRunningRef.current = false;
+      if (animRef.current !== null) cancelAnimationFrame(animRef.current);
+      animRef.current = null;
       drawFrameRef.current = null;
       lastFrameRef.current = null;
     };
   }, [resizeCanvas, drawFrame]);
+
+  useEffect(() => {
+    gameStateRef.current = gameState;
+
+    if (gameState === STATE.PLAYING) {
+      loopRunningRef.current = false;
+      if (animRef.current !== null) cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+      lastFrameRef.current = null;
+      loopRunningRef.current = true;
+      animRef.current = requestAnimationFrame((timestamp) => {
+        drawFrameRef.current?.(timestamp);
+      });
+    } else {
+      loopRunningRef.current = false;
+      if (animRef.current !== null) cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+      lastFrameRef.current = null;
+      drawFrame(performance.now());
+    }
+  }, [drawFrame, gameState]);
 
   /* ── Game state handlers ─────────────────────────────────────────────── */
   const handleStart = () => {

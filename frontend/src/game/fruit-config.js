@@ -113,10 +113,3 @@ export function createFruit(canvasWidth, canvasHeight) {
     sliced: false,
   };
 }
-
-export function updateFruit(fruit, deltaSeconds) {
-  fruit.x += fruit.vx * deltaSeconds;
-  fruit.y += fruit.vy * deltaSeconds;
-  fruit.vy += fruit.gravity * deltaSeconds;
-  fruit.rotation += fruit.rotationSpeed * deltaSeconds;
-}
