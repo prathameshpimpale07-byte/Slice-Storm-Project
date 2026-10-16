@@ -39,3 +39,17 @@ export function sliceFruitsBySegment(fruits, start, end, slicedAt) {
 
   return slicedFruits;
 }
+
+export function hitBombsBySegment(bombs, start, end, hitAt) {
+  const hitBombs = [];
+
+  bombs.forEach((bomb) => {
+    if (bomb.hit || !segmentIntersectsCircle(start, end, bomb)) return;
+
+    bomb.hit = true;
+    bomb.hitAt = hitAt;
+    hitBombs.push(bomb);
+  });
+
+  return hitBombs;
+}

@@ -25,6 +25,16 @@ export function updateFruits(fruits, deltaSeconds, canvasHeight) {
     .filter((fruit) => !isFruitOffscreen(fruit, canvasHeight));
 }
 
+export function updateFruitsWithMisses(fruits, deltaSeconds, canvasHeight) {
+  const updatedFruits = fruits.map((fruit) => updateFruit(fruit, deltaSeconds));
+  return {
+    active: updatedFruits.filter((fruit) => !isFruitOffscreen(fruit, canvasHeight)),
+    missed: updatedFruits.filter(
+      (fruit) => isFruitOffscreen(fruit, canvasHeight) && !fruit.sliced
+    ),
+  };
+}
+
 export function isFruitOffscreen(fruit, canvasHeight) {
   return fruit.y - fruit.radius > canvasHeight + fruit.radius;
 }

@@ -3,8 +3,9 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { createFruit } from "@/game/fruit-config";
-import { getDeltaSeconds, updateFruits } from "@/game/physics";
-import { sliceFruitsBySegment } from "@/game/collision";
+import { createBomb } from "@/game/bomb";
+import { getDeltaSeconds, updateFruit, updateFruitsWithMisses } from "@/game/physics";
+import { hitBombsBySegment, sliceFruitsBySegment } from "@/game/collision";
 import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
 import { createBurst, drawParticles, updateParticles } from "@/game/particles";
 
@@ -32,6 +33,8 @@ const SLICE_ANIMATION_DURATION_MS = 180;
 const SCORE_LABEL_DURATION_MS = 700;
 const COMBO_MESSAGE_DURATION_MS = 900;
 const SCREEN_FLASH_DURATION_MS = 120;
+const BOMB_ANIMATION_DURATION_MS = 220;
+const MAX_MISSES = 3;
 
 /* ── Background star particles for canvas ────────────────────────────────── */
 function createStars(count, w, h) {
@@ -56,6 +59,7 @@ export default function GameCanvas() {
   const animRef = useRef(null);
   const starsRef = useRef([]);
   const fruitsRef = useRef([]);
+  const bombsRef = useRef([]);
   const lastFrameRef = useRef(null);
   const spawnTimerRef = useRef(0);
   const drawFrameRef = useRef(null);
@@ -67,12 +71,15 @@ export default function GameCanvas() {
   const comboMessageRef = useRef(null);
   const particlesRef = useRef([]);
   const screenFlashRef = useRef(0);
+  const livesRef = useRef(3);
+  const missesRef = useRef(0);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(1);
   const [lives, setLives] = useState(3);
+  const [misses, setMisses] = useState(0);
   const [totalSliced, setTotalSliced] = useState(0);
   const [bestCombo, setBestCombo] = useState(1);
 
@@ -174,13 +181,32 @@ export default function GameCanvas() {
       spawnTimerRef.current -= deltaSeconds;
       if (spawnTimerRef.current <= 0) {
         fruitsRef.current.push(createFruit(w, h));
+        if (Math.random() < 0.18) bombsRef.current.push(createBomb(w, h));
         spawnTimerRef.current = 0.65 + Math.random() * 0.45;
       }
 
-      fruitsRef.current = updateFruits(fruitsRef.current, deltaSeconds, h)
+      const fruitUpdate = updateFruitsWithMisses(fruitsRef.current, deltaSeconds, h);
+      fruitsRef.current = fruitUpdate.active
         .filter((fruit) => (
           !fruit.sliced
           || timestamp - fruit.slicedAt < SLICE_ANIMATION_DURATION_MS
+        ));
+      if (fruitUpdate.missed.length > 0) {
+        const nextMisses = missesRef.current + fruitUpdate.missed.length;
+        missesRef.current = nextMisses;
+        setMisses(nextMisses);
+        if (nextMisses >= MAX_MISSES) {
+          gameStateRef.current = STATE.GAME_OVER;
+          loopRunningRef.current = false;
+          setGameState(STATE.GAME_OVER);
+        }
+      }
+
+      bombsRef.current = bombsRef.current
+        .map((bomb) => updateFruit(bomb, deltaSeconds))
+        .filter((bomb) => (
+          bomb.y - bomb.radius <= h + bomb.radius
+          && (!bomb.hit || timestamp - bomb.hitAt < BOMB_ANIMATION_DURATION_MS)
         ));
 
       fruitsRef.current.forEach((fruit) => {
@@ -201,6 +227,23 @@ export default function GameCanvas() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(fruit.emoji, 0, 0);
+        ctx.restore();
+      });
+
+      bombsRef.current.forEach((bomb) => {
+        ctx.save();
+        ctx.translate(bomb.x, bomb.y);
+        ctx.rotate(bomb.rotation);
+        const progress = bomb.hit
+          ? Math.min(1, (timestamp - bomb.hitAt) / BOMB_ANIMATION_DURATION_MS)
+          : 0;
+        ctx.globalAlpha = 1 - progress;
+        ctx.shadowColor = bomb.color;
+        ctx.shadowBlur = 18;
+        ctx.font = `${bomb.radius * 2}px "Segoe UI Emoji", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("💣", 0, 0);
         ctx.restore();
       });
     }
@@ -329,6 +372,25 @@ export default function GameCanvas() {
   };
 
   const processSwipeSegment = (start, end) => {
+    const hitBombs = hitBombsBySegment(
+      bombsRef.current,
+      start,
+      end,
+      end.time
+    );
+    if (hitBombs.length > 0) {
+      const nextLives = Math.max(0, livesRef.current - hitBombs.length);
+      livesRef.current = nextLives;
+      setLives(nextLives);
+      screenFlashRef.current = end.time + SCREEN_FLASH_DURATION_MS;
+      if (nextLives === 0) {
+        gameStateRef.current = STATE.GAME_OVER;
+        loopRunningRef.current = false;
+        setGameState(STATE.GAME_OVER);
+        return;
+      }
+    }
+
     const slicedFruits = sliceFruitsBySegment(
       fruitsRef.current,
       start,
@@ -436,9 +498,13 @@ export default function GameCanvas() {
     setScore(0);
     setCombo(1);
     setLives(3);
+    setMisses(0);
+    livesRef.current = 3;
+    missesRef.current = 0;
     setTotalSliced(0);
     setBestCombo(1);
     fruitsRef.current = [];
+    bombsRef.current = [];
     spawnTimerRef.current = 0;
     lastFrameRef.current = null;
     pointerTrailRef.current = [];
@@ -461,9 +527,13 @@ export default function GameCanvas() {
     setScore(0);
     setCombo(1);
     setLives(3);
+    setMisses(0);
+    livesRef.current = 3;
+    missesRef.current = 0;
     setTotalSliced(0);
     setBestCombo(1);
     fruitsRef.current = [];
+    bombsRef.current = [];
     spawnTimerRef.current = 0;
     lastFrameRef.current = null;
     pointerTrailRef.current = [];
@@ -479,6 +549,8 @@ export default function GameCanvas() {
   };
 
   const handleGameOver = () => {
+    gameStateRef.current = STATE.GAME_OVER;
+    loopRunningRef.current = false;
     setGameState(STATE.GAME_OVER);
   };
 
@@ -680,6 +752,28 @@ export default function GameCanvas() {
                   ❤️
                 </span>
               ))}
+            </div>
+          </div>
+
+          <div style={{ textAlign: "right", pointerEvents: "auto" }}>
+            <div style={{
+              fontSize: "0.65rem",
+              color: "#8892a4",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              fontWeight: 600,
+              marginBottom: "2px",
+            }}>
+              Misses
+            </div>
+            <div style={{
+              fontFamily: "'Exo 2', sans-serif",
+              fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
+              fontWeight: 900,
+              color: misses > 1 ? "#ff006e" : "#ff8c00",
+              lineHeight: 1,
+            }}>
+              {misses}/{MAX_MISSES}
             </div>
           </div>
         </div>
