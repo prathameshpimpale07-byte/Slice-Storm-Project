@@ -23,6 +23,9 @@ const STATE = {
   GAME_OVER: "GAME_OVER",
 };
 
+const TRAIL_DURATION_MS = 240;
+const MAX_TRAIL_POINTS = 18;
+
 /* ── Background star particles for canvas ────────────────────────────────── */
 function createStars(count, w, h) {
   const stars = [];
@@ -51,6 +54,8 @@ export default function GameCanvas() {
   const drawFrameRef = useRef(null);
   const gameStateRef = useRef(STATE.MENU);
   const loopRunningRef = useRef(false);
+  const pointerActiveRef = useRef(false);
+  const pointerTrailRef = useRef([]);
   const timeRef = useRef(0);
 
   const [gameState, setGameState] = useState(STATE.MENU);
@@ -125,6 +130,33 @@ export default function GameCanvas() {
       ctx.fill();
     });
 
+    const trailCutoff = timestamp - TRAIL_DURATION_MS;
+    pointerTrailRef.current = pointerTrailRef.current.filter(
+      (point) => point.time >= trailCutoff
+    );
+    const trail = pointerTrailRef.current;
+    if (trail.length > 1) {
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = "#00f5ff";
+      ctx.shadowBlur = 18;
+
+      for (let i = 1; i < trail.length; i += 1) {
+        const previous = trail[i - 1];
+        const point = trail[i];
+        const opacity = Math.max(0, 1 - (timestamp - point.time) / TRAIL_DURATION_MS);
+        ctx.beginPath();
+        ctx.moveTo(previous.x, previous.y);
+        ctx.lineTo(point.x, point.y);
+        ctx.strokeStyle = `rgba(0, 245, 255, ${opacity})`;
+        ctx.lineWidth = 3 + opacity * 5;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
     if (gameStateRef.current === STATE.PLAYING) {
       spawnTimerRef.current -= deltaSeconds;
       if (spawnTimerRef.current <= 0) {
@@ -196,6 +228,49 @@ export default function GameCanvas() {
     }
   }, []);
 
+  const getCanvasPoint = (event) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      time: performance.now(),
+    };
+  };
+
+  const addPointerPoint = (event) => {
+    const point = getCanvasPoint(event);
+    if (!point) return;
+
+    pointerTrailRef.current = [
+      ...pointerTrailRef.current.slice(-(MAX_TRAIL_POINTS - 1)),
+      point,
+    ];
+  };
+
+  const handlePointerDown = (event) => {
+    if (gameStateRef.current !== STATE.PLAYING) return;
+    pointerActiveRef.current = true;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    addPointerPoint(event);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!pointerActiveRef.current) return;
+    addPointerPoint(event);
+  };
+
+  const handlePointerEnd = (event) => {
+    if (!pointerActiveRef.current) return;
+    addPointerPoint(event);
+    pointerActiveRef.current = false;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   /* ── Setup / Teardown ────────────────────────────────────────────────── */
   useEffect(() => {
     resizeCanvas();
@@ -242,6 +317,7 @@ export default function GameCanvas() {
     fruitsRef.current = [];
     spawnTimerRef.current = 0;
     lastFrameRef.current = null;
+    pointerTrailRef.current = [];
     setGameState(STATE.PLAYING);
   };
 
@@ -260,6 +336,7 @@ export default function GameCanvas() {
     fruitsRef.current = [];
     spawnTimerRef.current = 0;
     lastFrameRef.current = null;
+    pointerTrailRef.current = [];
     setGameState(STATE.PLAYING);
   };
 
@@ -296,7 +373,15 @@ export default function GameCanvas() {
           height: "100%",
           display: "block",
           cursor: gameState === STATE.PLAYING ? "crosshair" : "default",
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTapHighlightColor: "transparent",
         }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
       />
 
       {/* ── HUD (visible during PLAYING state) ─────────────────────────── */}
