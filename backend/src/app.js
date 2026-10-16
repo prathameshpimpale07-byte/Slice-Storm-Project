@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { z } from "zod";
 import { getDatabaseState } from "./config/database.js";
+import authRoutes from "./routes/auth.js";
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
@@ -50,6 +51,8 @@ app.get("/api/health", (_request, response) => {
   });
 });
 
+app.use("/api/auth", authRoutes);
+
 app.use((_request, response) => {
   response.status(404).json({
     ok: false,
@@ -59,6 +62,16 @@ app.use((_request, response) => {
 
 app.use((error, _request, response, _next) => {
   console.error(error);
+  if (error instanceof z.ZodError) {
+    return response.status(400).json({
+      ok: false,
+      error: "Invalid request data",
+      details: error.issues.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      })),
+    });
+  }
   response.status(error.statusCode || 500).json({
     ok: false,
     error: env.NODE_ENV === "production" ? "Internal server error" : error.message,
