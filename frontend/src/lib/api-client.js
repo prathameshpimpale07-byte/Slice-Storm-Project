@@ -83,3 +83,7 @@ export function getLeaderboard(params = {}) {
 export function getMyLeaderboardRank() {
   return apiRequest("/api/leaderboard/me");
 }
+
+export function getGameHistory(limit = 20) {
+  return apiRequest(`/api/games/history?limit=${limit}`);
+}

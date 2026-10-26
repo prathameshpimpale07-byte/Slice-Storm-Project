@@ -29,7 +29,11 @@ export default function Navbar() {
   }
 
   const links = user
-    ? [{ href: "/play", label: "Play" }, { href: "/leaderboard", label: "Leaderboard" }]
+    ? [
+      { href: "/play", label: "Play" },
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/leaderboard", label: "Leaderboard" },
+    ]
     : NAV_LINKS;
 
   return (

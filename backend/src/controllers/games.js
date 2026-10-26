@@ -158,17 +158,41 @@ export async function gameHistory(request, response, next) {
     const limit = Number.isFinite(requestedLimit)
       ? Math.min(Math.max(requestedLimit, 1), 50)
       : 20;
-    const games = await Game.find({
-      user: request.user._id,
-      status: "completed",
-    })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
+    const filter = { user: request.user._id, status: "completed" };
+    const [games, stats] = await Promise.all([
+      Game.find(filter).sort({ createdAt: -1 }).limit(limit).lean(),
+      Game.aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: null,
+            totalGames: { $sum: 1 },
+            highestScore: { $max: "$score" },
+            totalFruitsSliced: { $sum: "$fruitsSliced" },
+            bestCombo: { $max: "$maxCombo" },
+            totalScore: { $sum: "$score" },
+          },
+        },
+      ]),
+    ]);
+    const summary = stats[0] || {
+      totalGames: 0,
+      highestScore: 0,
+      totalFruitsSliced: 0,
+      bestCombo: 0,
+      totalScore: 0,
+    };
 
     return response.status(200).json({
       ok: true,
       games: games.map(serializeGame),
+      stats: {
+        highestScore: summary.highestScore,
+        totalGames: summary.totalGames,
+        totalFruitsSliced: summary.totalFruitsSliced,
+        bestCombo: summary.bestCombo,
+        averageScore: summary.totalGames ? summary.totalScore / summary.totalGames : 0,
+      },
     });
   } catch (error) {
     return next(error);
