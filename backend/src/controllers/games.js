@@ -21,6 +21,7 @@ const completeSchema = z.object({
 const MAX_SCORE_PER_FRUIT = 100;
 const MAX_BOMB_HITS_PER_SECOND = 2;
 const MAX_COMBO_PER_FRUIT = 1;
+const MAX_FRUITS_PER_SECOND = 30;
 
 function serializeGame(game) {
   return {
@@ -47,6 +48,9 @@ function validateGameResult(input, game, now) {
   }
   if (input.fruitsSliced === 0 && input.score > 0) {
     return "Score must be zero when no fruits were sliced";
+  }
+  if (input.fruitsSliced > input.durationSeconds * MAX_FRUITS_PER_SECOND) {
+    return "Fruit count exceeds the permitted result rate";
   }
   if (input.score > input.fruitsSliced * MAX_SCORE_PER_FRUIT) {
     return "Score exceeds the permitted result range";

@@ -66,5 +66,6 @@ const gameSchema = new mongoose.Schema(
 );
 
 gameSchema.index({ user: 1, createdAt: -1 });
+gameSchema.index({ status: 1, score: -1, completedAt: 1 });
 
 export const Game = mongoose.models.Game || mongoose.model("Game", gameSchema);
