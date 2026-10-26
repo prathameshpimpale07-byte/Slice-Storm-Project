@@ -7,6 +7,7 @@ import helmet from "helmet";
 import { z } from "zod";
 import { getDatabaseState } from "./config/database.js";
 import authRoutes from "./routes/auth.js";
+import gameRoutes from "./routes/games.js";
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
@@ -52,6 +53,7 @@ app.get("/api/health", (_request, response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/games", gameRoutes);
 
 app.use((_request, response) => {
   response.status(404).json({
