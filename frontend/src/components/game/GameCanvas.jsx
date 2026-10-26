@@ -9,6 +9,7 @@ import { getDeltaSeconds, updateFruit, updateFruitsWithMisses } from "@/game/phy
 import { hitBombsBySegment, sliceFruitsBySegment } from "@/game/collision";
 import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
 import { createBurst, drawParticles, updateParticles } from "@/game/particles";
+import { completeGame, startGame } from "@/lib/api-client";
 import {
   getAudioSettings,
   playSound,
@@ -85,6 +86,9 @@ export default function GameCanvas() {
   const missesRef = useRef(0);
   const elapsedGameSecondsRef = useRef(0);
   const timeRef = useRef(0);
+  const bombsHitRef = useRef(0);
+  const sessionIdRef = useRef(null);
+  const completionSubmittedRef = useRef(false);
 
   const [gameState, setGameState] = useState(STATE.MENU);
   const [score, setScore] = useState(0);
@@ -94,6 +98,8 @@ export default function GameCanvas() {
   const [totalSliced, setTotalSliced] = useState(0);
   const [bestCombo, setBestCombo] = useState(1);
   const [audioSettings, setAudioSettings] = useState(getAudioSettings);
+  const [startError, setStartError] = useState("");
+  const [completionStatus, setCompletionStatus] = useState(null);
 
   /* ── Canvas resize logic ─────────────────────────────────────────────── */
   const resizeCanvas = useCallback(() => {
@@ -401,6 +407,7 @@ export default function GameCanvas() {
     );
     if (hitBombs.length > 0) {
       playSound("bomb");
+      bombsHitRef.current += hitBombs.length;
       const nextLives = Math.max(0, livesRef.current - hitBombs.length);
       livesRef.current = nextLives;
       setLives(nextLives);
@@ -521,8 +528,43 @@ export default function GameCanvas() {
     }
   }, [drawFrame, gameState]);
 
+  useEffect(() => {
+    if (gameState !== STATE.GAME_OVER || !sessionIdRef.current || completionSubmittedRef.current) {
+      return;
+    }
+
+    completionSubmittedRef.current = true;
+    setCompletionStatus("saving");
+    const durationSeconds = Math.max(1, Math.ceil(elapsedGameSecondsRef.current));
+    const accuracy = totalSliced + misses > 0
+      ? (totalSliced / (totalSliced + misses)) * 100
+      : 0;
+
+    completeGame({
+      sessionId: sessionIdRef.current,
+      score,
+      fruitsSliced: totalSliced,
+      bombsHit: bombsHitRef.current,
+      maxCombo: bestCombo,
+      accuracy,
+      durationSeconds,
+    })
+      .then(() => setCompletionStatus("saved"))
+      .catch(() => setCompletionStatus("failed"));
+  }, [bestCombo, gameState, misses, score, totalSliced]);
+
   /* ── Game state handlers ─────────────────────────────────────────────── */
-  const handleStart = () => {
+  const beginGame = async () => {
+    setStartError("");
+    try {
+      const result = await startGame();
+      sessionIdRef.current = result.game.sessionId;
+      completionSubmittedRef.current = false;
+    } catch (error) {
+      setStartError(error.message || "Unable to start a game. Please try again.");
+      return;
+    }
+
     resumeAudio();
     playSound("start");
     setScore(0);
@@ -532,6 +574,7 @@ export default function GameCanvas() {
     livesRef.current = 3;
     missesRef.current = 0;
     elapsedGameSecondsRef.current = 0;
+    bombsHitRef.current = 0;
     setTotalSliced(0);
     setBestCombo(1);
     fruitsRef.current = [];
@@ -543,7 +586,12 @@ export default function GameCanvas() {
     comboMessageRef.current = null;
     particlesRef.current = [];
     screenFlashRef.current = 0;
+    setCompletionStatus(null);
     setGameState(STATE.PLAYING);
+  };
+
+  const handleStart = () => {
+    void beginGame();
   };
 
   const handlePause = () => {
@@ -558,27 +606,7 @@ export default function GameCanvas() {
   };
 
   const handleRestart = () => {
-    resumeAudio();
-    playSound("start");
-    setScore(0);
-    setCombo(1);
-    setLives(3);
-    setMisses(0);
-    livesRef.current = 3;
-    missesRef.current = 0;
-    elapsedGameSecondsRef.current = 0;
-    setTotalSliced(0);
-    setBestCombo(1);
-    fruitsRef.current = [];
-    bombsRef.current = [];
-    spawnTimerRef.current = 0;
-    lastFrameRef.current = null;
-    pointerTrailRef.current = [];
-    scoreLabelsRef.current = [];
-    comboMessageRef.current = null;
-    particlesRef.current = [];
-    screenFlashRef.current = 0;
-    setGameState(STATE.PLAYING);
+    void beginGame();
   };
 
   const handleQuit = () => {
@@ -868,6 +896,11 @@ export default function GameCanvas() {
           }}>
             Slash fruits. Dodge bombs. Climb the leaderboard.
           </p>
+          {startError && (
+            <p role="alert" style={{ color: "#ff6b9d", fontSize: "0.8rem", marginBottom: "1rem" }}>
+              {startError}
+            </p>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%", maxWidth: "260px" }}>
             <OverlayButton onClick={handleStart} primary>
               🎮 Start Game
@@ -988,6 +1021,19 @@ export default function GameCanvas() {
               </div>
             </div>
           </div>
+          <p
+            role={completionStatus === "failed" ? "alert" : undefined}
+            style={{
+              color: completionStatus === "saved" ? "#39ff14" : "#ff6b9d",
+              fontSize: "0.8rem",
+              minHeight: "1.2rem",
+              marginBottom: "1rem",
+            }}
+          >
+            {completionStatus === "saving" && "Saving your score..."}
+            {completionStatus === "saved" && "Score saved successfully."}
+            {completionStatus === "failed" && "Score could not be saved. Please try again later."}
+          </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%", maxWidth: "260px" }}>
             <OverlayButton onClick={handleRestart} primary>

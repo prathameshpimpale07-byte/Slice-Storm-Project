@@ -60,3 +60,26 @@ export function loginUser(data) {
 export function logoutUser() {
   return apiRequest("/api/auth/logout", { method: "POST" });
 }
+
+export function startGame(data = { mode: "classic" }) {
+  return apiRequest("/api/games/start", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function completeGame(data) {
+  return apiRequest("/api/games/complete", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function getLeaderboard(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return apiRequest(`/api/leaderboard${query ? `?${query}` : ""}`);
+}
+
+export function getMyLeaderboardRank() {
+  return apiRequest("/api/leaderboard/me");
+}
