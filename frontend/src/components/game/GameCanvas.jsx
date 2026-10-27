@@ -10,6 +10,7 @@ import { hitBombsBySegment, sliceFruitsBySegment } from "@/game/collision";
 import { calculateSliceScore, createScoreLabels } from "@/game/scoring";
 import { createBurst, drawParticles, updateParticles } from "@/game/particles";
 import { completeGame, startGame } from "@/lib/api-client";
+import { INITIAL_LIVES } from "@/game/constants";
 import {
   getAudioSettings,
   playSound,
@@ -83,7 +84,7 @@ export default function GameCanvas() {
   const comboMessageRef = useRef(null);
   const particlesRef = useRef([]);
   const screenFlashRef = useRef(0);
-  const livesRef = useRef(3);
+  const livesRef = useRef(INITIAL_LIVES);
   const missesRef = useRef(0);
   const elapsedGameSecondsRef = useRef(0);
   const timeRef = useRef(0);
@@ -95,7 +96,7 @@ export default function GameCanvas() {
   const [gameState, setGameState] = useState(STATE.MENU);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(1);
-  const [lives, setLives] = useState(3);
+  const [lives, setLives] = useState(INITIAL_LIVES);
   const [misses, setMisses] = useState(0);
   const [totalSliced, setTotalSliced] = useState(0);
   const [bestCombo, setBestCombo] = useState(1);
@@ -145,10 +146,17 @@ export default function GameCanvas() {
 
     // ── Draw background gradient ─────────────────────────────────────
     const bgGrad = ctx.createRadialGradient(w * 0.3, h * 0.3, 0, w * 0.5, h * 0.5, w * 0.8);
-    bgGrad.addColorStop(0, "rgba(0,245,255,0.03)");
-    bgGrad.addColorStop(0.5, "rgba(255,0,110,0.02)");
-    bgGrad.addColorStop(1, "rgba(8,12,23,1)");
+    bgGrad.addColorStop(0, "rgba(34,211,238,0.1)");
+    bgGrad.addColorStop(0.42, "rgba(139,92,246,0.08)");
+    bgGrad.addColorStop(0.72, "rgba(255,79,216,0.035)");
+    bgGrad.addColorStop(1, "rgba(5,8,22,1)");
     ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    const horizon = ctx.createLinearGradient(0, 0, 0, h);
+    horizon.addColorStop(0, "rgba(12, 24, 54, .12)");
+    horizon.addColorStop(1, "rgba(3, 7, 18, .42)");
+    ctx.fillStyle = horizon;
     ctx.fillRect(0, 0, w, h);
 
     // ── Draw twinkling stars ─────────────────────────────────────────
@@ -180,8 +188,8 @@ export default function GameCanvas() {
       ctx.save();
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.shadowColor = "#00f5ff";
-      ctx.shadowBlur = 18;
+      ctx.shadowColor = "#22d3ee";
+      ctx.shadowBlur = 24;
 
       for (let i = 1; i < trail.length; i += 1) {
         const previous = trail[i - 1];
@@ -190,8 +198,11 @@ export default function GameCanvas() {
         ctx.beginPath();
         ctx.moveTo(previous.x, previous.y);
         ctx.lineTo(point.x, point.y);
-        ctx.strokeStyle = `rgba(0, 245, 255, ${opacity})`;
-        ctx.lineWidth = 3 + opacity * 5;
+        ctx.strokeStyle = `rgba(34, 211, 238, ${opacity})`;
+        ctx.lineWidth = 4 + opacity * 7;
+        ctx.stroke();
+        ctx.strokeStyle = `rgba(255, 79, 216, ${opacity * .42})`;
+        ctx.lineWidth = 1.5 + opacity * 2;
         ctx.stroke();
       }
 
@@ -243,20 +254,44 @@ export default function GameCanvas() {
         ctx.save();
         ctx.translate(fruit.x, fruit.y);
         ctx.rotate(fruit.rotation);
+        ctx.shadowColor = fruit.color;
+        ctx.shadowBlur = 16;
         if (fruit.sliced) {
           const progress = Math.min(
             1,
             (timestamp - fruit.slicedAt) / SLICE_ANIMATION_DURATION_MS
           );
+          const separation = progress * 30;
           ctx.globalAlpha = 1 - progress;
-          ctx.scale(1 + progress * 0.45, 1 + progress * 0.45);
+          ctx.shadowBlur = 22;
+          ctx.save();
+          ctx.translate(-separation * 0.55, -separation * 0.25);
+          ctx.rotate(-progress * 0.45);
+          ctx.beginPath();
+          ctx.rect(-fruit.radius * 1.4, -fruit.radius * 1.4, fruit.radius * 1.4, fruit.radius * 2.8);
+          ctx.clip();
+          ctx.font = `${fruit.radius * 2}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(fruit.emoji, 0, 0);
+          ctx.restore();
+          ctx.save();
+          ctx.translate(separation * 0.55, separation * 0.25);
+          ctx.rotate(progress * 0.45);
+          ctx.beginPath();
+          ctx.rect(0, -fruit.radius * 1.4, fruit.radius * 1.4, fruit.radius * 2.8);
+          ctx.clip();
+          ctx.font = `${fruit.radius * 2}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(fruit.emoji, 0, 0);
+          ctx.restore();
+        } else {
+          ctx.font = `${fruit.radius * 2}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(fruit.emoji, 0, 0);
         }
-        ctx.shadowColor = fruit.color;
-        ctx.shadowBlur = 16;
-        ctx.font = `${fruit.radius * 2}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(fruit.emoji, 0, 0);
         ctx.restore();
       });
 
@@ -582,9 +617,9 @@ export default function GameCanvas() {
     playSound("start");
     setScore(0);
     setCombo(1);
-    setLives(3);
+    setLives(INITIAL_LIVES);
     setMisses(0);
-    livesRef.current = 3;
+    livesRef.current = INITIAL_LIVES;
     missesRef.current = 0;
     elapsedGameSecondsRef.current = 0;
     bombsHitRef.current = 0;
@@ -688,6 +723,7 @@ export default function GameCanvas() {
       {gameState === STATE.PLAYING && (
         <div
           id="game-hud"
+          className="game-hud-glass"
           style={{
             position: "absolute",
             top: 0,
@@ -1069,6 +1105,7 @@ export default function GameCanvas() {
 function Overlay({ children }) {
   return (
     <div
+      className="game-overlay"
       style={{
         position: "absolute",
         inset: 0,
@@ -1083,6 +1120,7 @@ function Overlay({ children }) {
       }}
     >
       <div
+        className="game-overlay-card"
         style={{
           background: "rgba(15,20,40,0.7)",
           backdropFilter: "blur(24px) saturate(1.8)",

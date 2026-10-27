@@ -22,7 +22,7 @@ export function distanceToSegmentSquared(point, start, end) {
 }
 
 export function segmentIntersectsCircle(start, end, circle) {
-  const hitRadius = circle.radius + 8;
+  const hitRadius = circle.radius + 18;
   return distanceToSegmentSquared(circle, start, end) <= hitRadius * hitRadius;
 }
 

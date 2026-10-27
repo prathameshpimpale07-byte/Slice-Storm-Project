@@ -19,6 +19,7 @@ export function createBurst(x, y, color, createdAt, count = 12) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed - 50,
       size: randomBetween(2, 5),
+      shape: index % 3 === 0 ? "square" : "drop",
       gravity: 420,
       color,
       createdAt,
@@ -52,8 +53,13 @@ export function drawParticles(ctx, particles, timestamp) {
     ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 10;
+    const size = particle.size * (1 - progress * 0.35);
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * (1 - progress * 0.35), 0, Math.PI * 2);
+    if (particle.shape === "square") {
+      ctx.rect(particle.x - size, particle.y - size, size * 2, size * 2);
+    } else {
+      ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+    }
     ctx.fill();
     ctx.restore();
   });
