@@ -44,10 +44,10 @@ export default function LeaderboardPage() {
                 <table style={tableStyle}>
                   <thead><tr><th>Rank</th><th>Player</th><th>Score</th></tr></thead>
                   <tbody>
-                    {data.leaderboard.map((entry) => {
+                    {data.leaderboard.map((entry, i) => {
                       const isCurrentPlayer = myRank?.rank === entry.rank && myRank?.score === entry.score && myRank?.playerName === entry.playerName;
                       return (
-                        <tr key={`${entry.rank}-${entry.playerName}-${entry.score}`} style={isCurrentPlayer ? { background: "rgba(0,245,255,0.1)" } : undefined}>
+                        <tr key={`${entry.rank}-${entry.playerName}-${entry.score}-${i}`} style={isCurrentPlayer ? { background: "rgba(0,245,255,0.1)" } : undefined}>
                           <td style={{ color: entry.rank <= 3 ? "#ff8c00" : "#8892a4", fontWeight: 700 }}>#{entry.rank}</td>
                           <td>{entry.playerName}{isCurrentPlayer && <span style={{ color: "#00f5ff", fontSize: "0.7rem", marginLeft: "0.5rem" }}>YOU</span>}</td>
                           <td style={{ color: "#00f5ff", fontWeight: 700 }}>{entry.score}</td>
