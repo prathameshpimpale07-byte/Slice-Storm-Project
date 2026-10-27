@@ -4,8 +4,7 @@ import { requireAuth } from "../middleware/require-auth.js";
 
 const router = express.Router();
 
-router.use(requireAuth);
 router.get("/", getLeaderboard);
-router.get("/me", getMyLeaderboardRank);
+router.get("/me", requireAuth, getMyLeaderboardRank);
 
 export default router;

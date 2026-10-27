@@ -24,3 +24,19 @@ export async function requireAuth(request, response, next) {
     return next(error);
   }
 }
+
+export async function optionalAuth(request, _response, next) {
+  const token = request.cookies?.sliceStormToken;
+  if (!token) return next();
+
+  try {
+    const payload = jwt.verify(token, env.JWT_SECRET);
+    request.user = await User.findById(payload.sub).select("-passwordHash");
+    return next();
+  } catch (error) {
+    if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+      return next();
+    }
+    return next(error);
+  }
+}

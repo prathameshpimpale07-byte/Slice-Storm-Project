@@ -64,5 +64,8 @@ export function logout(_request, response) {
 }
 
 export function currentUser(request, response) {
-  return response.status(200).json({ ok: true, user: serializeUser(request.user) });
+  return response.status(200).json({
+    ok: true,
+    user: request.user ? serializeUser(request.user) : null,
+  });
 }
