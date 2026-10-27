@@ -20,7 +20,6 @@ const completeSchema = z.object({
 
 const MAX_SCORE_PER_FRUIT = 100;
 const MAX_BOMB_HITS_PER_SECOND = 2;
-const MAX_COMBO_PER_FRUIT = 1;
 const MAX_FRUITS_PER_SECOND = 30;
 
 function serializeGame(game) {
@@ -55,7 +54,7 @@ function validateGameResult(input, game, now) {
   if (input.score > input.fruitsSliced * MAX_SCORE_PER_FRUIT) {
     return "Score exceeds the permitted result range";
   }
-  if (input.maxCombo > Math.max(1, input.fruitsSliced * MAX_COMBO_PER_FRUIT)) {
+  if (input.maxCombo > Math.max(1, input.fruitsSliced + 1)) {
     return "Combo exceeds the permitted result range";
   }
   if (input.bombsHit > input.durationSeconds * MAX_BOMB_HITS_PER_SECOND) {
