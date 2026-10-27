@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -19,8 +20,8 @@ export default function Footer() {
         gap: "1rem",
       }}>
         {/* Brand */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontSize: "1.1rem", filter: "drop-shadow(0 0 6px rgba(0,245,255,0.3))" }}>⚡</span>
+        <div className="footer-brand">
+          <Image className="footer-logo-image" src="/slice-storm-logo.png" alt="" width={56} height={56} />
           <span
             className="grad-text"
             style={{

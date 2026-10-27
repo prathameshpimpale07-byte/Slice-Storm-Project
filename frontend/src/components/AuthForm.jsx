@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, loginUser, registerUser } from "@/lib/api-client";
@@ -75,7 +76,7 @@ export default function AuthForm({ mode }) {
       <div className="auth-orb auth-orb-magenta" />
       <section className="glass auth-card" aria-labelledby="auth-title">
         <Link href="/" className="auth-brand" aria-label="Slice Storm home">
-          <span className="auth-brand-mark">⚡</span>
+          <Image className="auth-brand-logo" src="/slice-storm-logo.png" alt="" width={80} height={80} priority />
           <span className="grad-text">SLICE STORM</span>
         </Link>
         <p className="auth-kicker">{isRegister ? "CREATE YOUR PLAYER PROFILE" : "WELCOME BACK, PLAYER"}</p>
