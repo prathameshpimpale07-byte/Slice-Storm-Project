@@ -74,6 +74,7 @@ export default function GameCanvas() {
   const lastFrameRef = useRef(null);
   const spawnTimerRef = useRef(0);
   const drawFrameRef = useRef(null);
+  const canvasDprRef = useRef(1);
   const gameStateRef = useRef(STATE.MENU);
   const loopRunningRef = useRef(false);
   const pointerActiveRef = useRef(false);
@@ -87,6 +88,7 @@ export default function GameCanvas() {
   const elapsedGameSecondsRef = useRef(0);
   const timeRef = useRef(0);
   const bombsHitRef = useRef(0);
+  const bestComboRef = useRef(1);
   const sessionIdRef = useRef(null);
   const completionSubmittedRef = useRef(false);
 
@@ -108,15 +110,16 @@ export default function GameCanvas() {
     if (!canvas || !container) return;
 
     const rect = container.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvasDprRef.current = dpr;
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
 
     const ctx = canvas.getContext("2d");
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // Re-create stars on resize
     starsRef.current = createStars(80, rect.width, rect.height);
@@ -127,7 +130,7 @@ export default function GameCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = canvasDprRef.current;
     const w = canvas.width / dpr;
     const h = canvas.height / dpr;
     const deltaSeconds = getDeltaSeconds(timestamp, lastFrameRef.current);
@@ -441,7 +444,11 @@ export default function GameCanvas() {
     setScore((currentScore) => currentScore + scoreResult.totalPoints);
     setCombo(scoreResult.nextCombo);
     setTotalSliced((currentTotal) => currentTotal + slicedFruits.length);
-    setBestCombo((currentBest) => Math.max(currentBest, scoreResult.nextCombo));
+    setBestCombo((currentBest) => {
+      const next = Math.max(currentBest, scoreResult.nextCombo);
+      bestComboRef.current = next;
+      return next;
+    });
     scoreLabelsRef.current.push(
       ...createScoreLabels(slicedFruits, scoreResult, end.time)
     );
@@ -489,11 +496,17 @@ export default function GameCanvas() {
   /* ── Setup / Teardown ────────────────────────────────────────────────── */
   useEffect(() => {
     resizeCanvas();
+    const container = containerRef.current;
+    const resizeObserver = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(resizeCanvas);
+    resizeObserver?.observe(container);
     window.addEventListener("resize", resizeCanvas);
     drawFrameRef.current = drawFrame;
     drawFrame(performance.now());
 
     return () => {
+      resizeObserver?.disconnect();
       window.removeEventListener("resize", resizeCanvas);
       stopMusic();
       loopRunningRef.current = false;
@@ -545,7 +558,7 @@ export default function GameCanvas() {
       score,
       fruitsSliced: totalSliced,
       bombsHit: bombsHitRef.current,
-      maxCombo: bestCombo,
+      maxCombo: Math.max(1, bestComboRef.current),
       accuracy,
       durationSeconds,
     })
@@ -575,6 +588,7 @@ export default function GameCanvas() {
     missesRef.current = 0;
     elapsedGameSecondsRef.current = 0;
     bombsHitRef.current = 0;
+    bestComboRef.current = 1;
     setTotalSliced(0);
     setBestCombo(1);
     fruitsRef.current = [];
@@ -612,12 +626,6 @@ export default function GameCanvas() {
   const handleQuit = () => {
     playSound("button");
     setGameState(STATE.MENU);
-  };
-
-  const handleGameOver = () => {
-    gameStateRef.current = STATE.GAME_OVER;
-    loopRunningRef.current = false;
-    setGameState(STATE.GAME_OVER);
   };
 
   const toggleSoundEffects = () => {
@@ -787,79 +795,81 @@ export default function GameCanvas() {
             </div>
           </div>
 
-          {/* Pause button */}
-          <button
-            onClick={handlePause}
-            id="pause-btn"
-            style={{
-              pointerEvents: "auto",
-              background: "rgba(0,245,255,0.08)",
-              border: "1px solid rgba(0,245,255,0.2)",
-              borderRadius: "10px",
-              color: "#00f5ff",
-              padding: "0.4rem 0.8rem",
-              cursor: "pointer",
-              fontFamily: "'Exo 2', sans-serif",
-              fontWeight: 700,
-              fontSize: "0.75rem",
-              letterSpacing: "0.05em",
-              transition: "all 0.2s",
-            }}
-          >
-            ⏸ PAUSE
-          </button>
+          <div className="game-hud-secondary">
+            {/* Pause button */}
+            <button
+              onClick={handlePause}
+              id="pause-btn"
+              style={{
+                pointerEvents: "auto",
+                background: "rgba(0,245,255,0.08)",
+                border: "1px solid rgba(0,245,255,0.2)",
+                borderRadius: "10px",
+                color: "#00f5ff",
+                padding: "0.4rem 0.8rem",
+                cursor: "pointer",
+                fontFamily: "'Exo 2', sans-serif",
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                letterSpacing: "0.05em",
+                transition: "all 0.2s",
+              }}
+            >
+              ⏸ PAUSE
+            </button>
 
-          {/* Lives */}
-          <div style={{ textAlign: "right", pointerEvents: "auto" }}>
-            <div style={{
-              fontSize: "0.65rem",
-              color: "#8892a4",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              fontWeight: 600,
-              marginBottom: "2px",
-            }}>
-              Lives
+            {/* Lives */}
+            <div style={{ textAlign: "right", pointerEvents: "auto" }}>
+              <div style={{
+                fontSize: "0.65rem",
+                color: "#8892a4",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontWeight: 600,
+                marginBottom: "2px",
+              }}>
+                Lives
+              </div>
+              <div style={{
+                fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
+                lineHeight: 1,
+                filter: "drop-shadow(0 0 6px rgba(255,0,110,0.4))",
+              }}>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      opacity: i < lives ? 1 : 0.2,
+                      transition: "opacity 0.3s ease",
+                      marginLeft: i > 0 ? "3px" : 0,
+                    }}
+                  >
+                    ❤️
+                  </span>
+                ))}
+              </div>
             </div>
-            <div style={{
-              fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
-              lineHeight: 1,
-              filter: "drop-shadow(0 0 6px rgba(255,0,110,0.4))",
-            }}>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <span
-                  key={i}
-                  style={{
-                    opacity: i < lives ? 1 : 0.2,
-                    transition: "opacity 0.3s ease",
-                    marginLeft: i > 0 ? "3px" : 0,
-                  }}
-                >
-                  ❤️
-                </span>
-              ))}
-            </div>
-          </div>
 
-          <div style={{ textAlign: "right", pointerEvents: "auto" }}>
-            <div style={{
-              fontSize: "0.65rem",
-              color: "#8892a4",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              fontWeight: 600,
-              marginBottom: "2px",
-            }}>
-              Misses
-            </div>
-            <div style={{
-              fontFamily: "'Exo 2', sans-serif",
-              fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
-              fontWeight: 900,
-              color: misses > 1 ? "#ff006e" : "#ff8c00",
-              lineHeight: 1,
-            }}>
-              {misses}/{MAX_MISSES}
+            <div style={{ textAlign: "right", pointerEvents: "auto" }}>
+              <div style={{
+                fontSize: "0.65rem",
+                color: "#8892a4",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontWeight: 600,
+                marginBottom: "2px",
+              }}>
+                Misses
+              </div>
+              <div style={{
+                fontFamily: "'Exo 2', sans-serif",
+                fontSize: "clamp(1rem, 3.5vw, 1.5rem)",
+                fontWeight: 900,
+                color: misses > 1 ? "#ff006e" : "#ff8c00",
+                lineHeight: 1,
+              }}>
+                {misses}/{MAX_MISSES}
+              </div>
             </div>
           </div>
         </div>
@@ -1049,35 +1059,6 @@ export default function GameCanvas() {
         </Overlay>
       )}
 
-      {/* ── Debug: Game Over trigger (placeholder — remove when gameplay is wired) */}
-      {gameState === STATE.PLAYING && (
-        <button
-          onClick={handleGameOver}
-          id="debug-gameover-btn"
-          style={{
-            position: "absolute",
-            bottom: "1rem",
-            right: "1rem",
-            zIndex: 30,
-            background: "rgba(255,0,110,0.12)",
-            border: "1px solid rgba(255,0,110,0.3)",
-            borderRadius: "8px",
-            color: "#ff006e",
-            padding: "0.4rem 0.8rem",
-            cursor: "pointer",
-            fontFamily: "'Exo 2', sans-serif",
-            fontWeight: 600,
-            fontSize: "0.7rem",
-            letterSpacing: "0.03em",
-            opacity: 0.6,
-            transition: "opacity 0.2s",
-          }}
-          onMouseEnter={(e) => e.target.style.opacity = "1"}
-          onMouseLeave={(e) => e.target.style.opacity = "0.6"}
-        >
-          ⚙ Debug: Game Over
-        </button>
-      )}
     </div>
   );
 }
