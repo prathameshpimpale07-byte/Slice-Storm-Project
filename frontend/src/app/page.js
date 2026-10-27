@@ -194,7 +194,7 @@ export default function HomePage() {
         {/* Hero content */}
         <div className="slide-up hero-content" style={{ position: "relative", zIndex: 10, maxWidth: "720px", margin: "0 auto" }}>
           {/* Badge */}
-          <div
+          {/* <div
             className="slide-up-delay-1"
             style={{
               display: "inline-flex",
@@ -222,7 +222,7 @@ export default function HomePage() {
               animation: "blink-dot 1.5s ease-in-out infinite",
             }} />
             VELoop Rewards · Full Stack Game
-          </div>
+          </div> */}
 
           {/* Title */}
           <h1

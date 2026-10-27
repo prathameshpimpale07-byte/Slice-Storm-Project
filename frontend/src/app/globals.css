@@ -676,6 +676,18 @@ body  {
   .dashboard-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+
+  #game-hud {
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .game-hud-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-left: auto;
+  }
 }
 
 .dashboard-stat-grid {
@@ -706,6 +718,26 @@ table th {
 }
 
 @media (max-width: 420px) {
+  #game-hud {
+    padding: 0.6rem 0.65rem !important;
+    gap: 0.45rem;
+  }
+
+  #game-hud > div:nth-child(2),
+  #game-hud > div:nth-child(3),
+  #game-hud > div:nth-child(4) {
+    display: none;
+  }
+
+  .game-hud-secondary {
+    gap: 0.45rem;
+  }
+
+  #pause-btn {
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.65rem !important;
+  }
+
   .landing-hero h1 {
     font-size: clamp(3rem, 18vw, 4.25rem) !important;
   }
