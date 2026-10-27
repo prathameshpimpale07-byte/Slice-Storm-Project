@@ -27,9 +27,9 @@ export default function LeaderboardPage() {
     <main style={pageStyle}>
       <Navbar />
       <section style={contentStyle}>
-        <p style={eyebrowStyle}>GLOBAL RANKINGS</p>
-        <h1 style={headingStyle}>Leaderboard</h1>
-        <p style={subheadingStyle}>The best completed runs, ranked by score.</p>
+        <p style={eyebrowStyle}>🏆 GLOBAL RANKINGS</p>
+        <h1 style={headingStyle}>Slice Masters</h1>
+        <p style={subheadingStyle}>The sharpest players. The highest scores. Your next record.</p>
         {loading ? <MessageState message="Loading rankings..." /> : error ? <MessageState message={error} error /> : (
           <section className="glass" style={cardStyle}>
             {myRank?.rank ? (
@@ -85,4 +85,3 @@ const eyebrowStyle = { color: "#00f5ff", fontSize: "0.7rem", letterSpacing: "0.1
 const headingStyle = { fontFamily: "var(--font-exo2, sans-serif)", fontSize: "clamp(2rem, 5vw, 3.5rem)", margin: "0.5rem 0" };
 const subheadingStyle = { color: "#8892a4", margin: 0 };
 const tableStyle = { width: "100%", borderCollapse: "collapse", minWidth: "440px", color: "#c5ccda" };
-

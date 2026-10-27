@@ -39,9 +39,9 @@ export default function DashboardPage() {
     <main style={pageStyle}>
       <Navbar />
       <section style={contentStyle}>
-        <p style={eyebrowStyle}>PLAYER PROFILE</p>
+        <p style={eyebrowStyle}>🎮 PLAYER PROFILE</p>
         <h1 style={headingStyle}>Welcome back, {user?.name || "player"}</h1>
-        <p style={subheadingStyle}>Your saved Slice Storm performance at a glance.</p>
+        <p style={subheadingStyle}>Your arcade performance at a glance.</p>
 
         {authLoading || loading ? <LoadingState label="Loading your stats..." /> : error ? (
           <MessageState message={error} />
@@ -137,4 +137,3 @@ const subheadingStyle = { color: "#8892a4", margin: 0 };
 const sectionHeaderStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" };
 const sectionTitleStyle = { margin: "0.35rem 0 0", fontSize: "1.5rem", fontFamily: "var(--font-exo2, sans-serif)" };
 const tableStyle = { width: "100%", borderCollapse: "collapse", minWidth: "500px", color: "#c5ccda" };
-

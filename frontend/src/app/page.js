@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { GAME_MODE_COUNT, INITIAL_LIVES, MAX_COMBO_MULTIPLIER } from "@/game/constants";
 
 /* ── Static fruit emoji list for decorative floating display ─────────────── */
 const FRUITS = [
@@ -241,7 +242,13 @@ export default function HomePage() {
               textShadow: "0 0 40px rgba(255,255,255,0.1)",
             }}>
               STORM
-              <span style={{ fontSize: "0.5em", marginLeft: "0.2em" }}>⚡</span>
+              <span
+                aria-label="Game mode"
+                role="img"
+                style={{ fontSize: "0.42em", marginLeft: "0.2em", verticalAlign: "0.08em" }}
+              >
+                🎮
+              </span>
             </span>
           </h1>
 
@@ -256,9 +263,9 @@ export default function HomePage() {
               lineHeight: 1.7,
             }}
           >
-            Slash fruits. Dodge bombs. Climb the leaderboard.
+            SLICE • COMBO • SURVIVE
             <br />
-            <span style={{ color: "rgba(255,255,255,0.85)" }}>The ultimate browser fruit-slicing experience.</span>
+            <span style={{ color: "rgba(255,255,255,0.85)" }}>Master the blade. Own the leaderboard.</span>
           </p>
 
           {/* CTA Buttons */}
@@ -294,10 +301,10 @@ export default function HomePage() {
             }}
           >
             {[
-              { val: "3", label: "Lives" },
-              { val: "×4", label: "Max Combo" },
+              { val: INITIAL_LIVES, label: "Lives" },
+              { val: `×${MAX_COMBO_MULTIPLIER}`, label: "Max Combo" },
               { val: "∞", label: "Leaderboard" },
-              { val: "1", label: "Classic Mode" },
+              { val: GAME_MODE_COUNT, label: "Classic Mode" },
             ].map((s) => (
               <div key={s.label} style={{ textAlign: "center" }}>
                 <div
