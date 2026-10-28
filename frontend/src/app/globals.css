@@ -1168,6 +1168,110 @@ body {
       }
     }
 
+    /* The score card is part of the default landing layout. */
+    .hero-scorecard {
+      position: absolute;
+      right: clamp(1.5rem, 8vw, 8rem);
+      bottom: 12%;
+      width: 190px;
+      padding: 1rem;
+      color: #b7c8d8;
+      text-align: left;
+      background: #172437;
+      border: 1px solid #38536b;
+      border-radius: 8px;
+      box-shadow: 6px 6px 0 rgba(5, 12, 22, .35);
+      transform: rotate(3deg);
+    }
+
+    .hero-scorecard-top,
+    .hero-mini-stats {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .62rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .hero-scorecard-top {
+      color: #72d6ef;
+      font-weight: 700;
+    }
+
+    .hero-live-dot {
+      color: #ffb86b;
+      font-size: .8rem;
+    }
+
+    .hero-score {
+      margin-top: .35rem;
+      color: #f3fbff;
+      font-family: "Exo 2", sans-serif;
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .hero-score-label {
+      margin-top: .25rem;
+      color: #8fa4b8;
+      font-size: .68rem;
+    }
+
+    .hero-mini-stats {
+      margin-top: 1rem;
+      color: #8fa4b8;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .hero-mini-stats b {
+      color: #ffb86b;
+      font-size: .9rem;
+    }
+
+    .hero-scorebar {
+      height: 5px;
+      margin: .85rem 0 .7rem;
+      overflow: hidden;
+      background: #0c1420;
+      border-radius: 3px;
+    }
+
+    .hero-scorebar span {
+      display: block;
+      width: 72%;
+      height: 100%;
+      background: #72d6ef;
+    }
+
+    .hero-scorecard p {
+      margin: 0;
+      color: #d3e2ef;
+      font-size: .72rem;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 900px) {
+      .hero-scorecard {
+        right: 1rem;
+        bottom: 5%;
+        transform: rotate(2deg) scale(.9);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .hero-scorecard {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        width: min(280px, 100%);
+        margin: 2rem auto 0;
+        transform: rotate(-1deg);
+      }
+    }
+
     /* Default player-facing theme: simple surfaces with a few hand-built details. */
     .landing-hero,
     .features-section,
@@ -1286,6 +1390,109 @@ body {
       border-radius: 4px;
     }
 
+    .hero-scorecard {
+      position: absolute;
+      right: clamp(1.5rem, 8vw, 8rem);
+      bottom: 12%;
+      width: 190px;
+      padding: 1rem;
+      color: #b7c8d8;
+      text-align: left;
+      background: #172437;
+      border: 1px solid #38536b;
+      border-radius: 8px;
+      box-shadow: 6px 6px 0 rgba(5, 12, 22, .35);
+      transform: rotate(3deg);
+    }
+
+    .hero-scorecard-top,
+    .hero-mini-stats {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .62rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .hero-scorecard-top {
+      color: #72d6ef;
+      font-weight: 700;
+    }
+
+    .hero-live-dot {
+      color: #ffb86b;
+      font-size: .8rem;
+    }
+
+    .hero-score {
+      margin-top: .35rem;
+      color: #f3fbff;
+      font-family: "Exo 2", sans-serif;
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .hero-score-label {
+      margin-top: .25rem;
+      color: #8fa4b8;
+      font-size: .68rem;
+    }
+
+    .hero-mini-stats {
+      margin-top: 1rem;
+      color: #8fa4b8;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .hero-mini-stats b {
+      color: #ffb86b;
+      font-size: .9rem;
+    }
+
+    .hero-scorebar {
+      height: 5px;
+      margin: .85rem 0 .7rem;
+      overflow: hidden;
+      background: #0c1420;
+      border-radius: 3px;
+    }
+
+    .hero-scorebar span {
+      display: block;
+      width: 72%;
+      height: 100%;
+      background: #72d6ef;
+    }
+
+    .hero-scorecard p {
+      margin: 0;
+      color: #d3e2ef;
+      font-size: .72rem;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 900px) {
+      .hero-scorecard {
+        right: 1rem;
+        bottom: 5%;
+        transform: rotate(2deg) scale(.9);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .hero-scorecard {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        width: min(280px, 100%);
+        margin: 2rem auto 0;
+        transform: rotate(-1deg);
+      }
+    }
+
     /* Keep the landing page playful without making every element look automated. */
     .landing-hero {
       min-height: 680px;
@@ -1391,6 +1598,74 @@ body {
       opacity: 1;
       transform: none;
       transition: none;
+    }
+
+    .hero-scorecard {
+      position: absolute;
+      right: clamp(1.5rem, 8vw, 8rem);
+      bottom: 12%;
+      width: 190px;
+      padding: 1rem;
+      color: #b7c8d8;
+      text-align: left;
+      background: #172437;
+      border: 1px solid #38536b;
+      border-radius: 8px;
+      box-shadow: 6px 6px 0 rgba(5, 12, 22, .35);
+      transform: rotate(3deg);
+    }
+
+    .hero-scorecard-top,
+    .hero-mini-stats {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .62rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .hero-scorecard-top { color: #72d6ef; font-weight: 700; }
+    .hero-live-dot { color: #ffb86b; font-size: .8rem; }
+    .hero-score {
+      margin-top: .35rem;
+      color: #f3fbff;
+      font-family: "Exo 2", sans-serif;
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .hero-score-label { margin-top: .25rem; color: #8fa4b8; font-size: .68rem; }
+    .hero-mini-stats {
+      margin-top: 1rem;
+      color: #8fa4b8;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .hero-mini-stats b { color: #ffb86b; font-size: .9rem; }
+    .hero-scorebar {
+      height: 5px;
+      margin: .85rem 0 .7rem;
+      overflow: hidden;
+      background: #0c1420;
+      border-radius: 3px;
+    }
+    .hero-scorebar span { display: block; width: 72%; height: 100%; background: #72d6ef; }
+    .hero-scorecard p { margin: 0; color: #d3e2ef; font-size: .72rem; line-height: 1.4; }
+
+    @media (max-width: 900px) {
+      .hero-scorecard { right: 1rem; bottom: 5%; transform: rotate(2deg) scale(.9); }
+    }
+
+    @media (max-width: 680px) {
+      .hero-scorecard {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        width: min(280px, 100%);
+        margin: 2rem auto 0;
+        transform: rotate(-1deg);
+      }
     }
 
     .navbar {

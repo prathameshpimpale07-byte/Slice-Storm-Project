@@ -210,6 +210,21 @@ export default function HomePage() {
           </div>
         </div>
 
+        <aside className="hero-scorecard" aria-label="Example game score">
+          <div className="hero-scorecard-top">
+            <span>LAST RUN</span>
+            <span className="hero-live-dot">●</span>
+          </div>
+          <div className="hero-score">248</div>
+          <div className="hero-score-label">points before the bomb</div>
+          <div className="hero-mini-stats">
+            <span><b>×4</b> combo</span>
+            <span><b>17</b> sliced</span>
+          </div>
+          <div className="hero-scorebar"><span /></div>
+          <p>Beat this score<br />if you can.</p>
+        </aside>
+
         {/* Bottom fade */}
         <div
           style={{

@@ -126,6 +126,21 @@ export default function GameCanvas() {
     // Keep the play area quiet so the fruit and the swipe are easy to read.
     ctx.fillStyle = "#101a29";
     ctx.fillRect(0, 0, w, h);
+    const laneWidth = Math.max(90, w / 6);
+    for (let lane = 0; lane < Math.ceil(w / laneWidth); lane += 1) {
+      ctx.fillStyle = lane % 2 === 0 ? "rgba(114,214,239,.025)" : "rgba(255,184,107,.018)";
+      ctx.fillRect(lane * laneWidth, 0, laneWidth, h - 18);
+    }
+    ctx.strokeStyle = "rgba(114,214,239,.09)";
+    ctx.setLineDash([3, 10]);
+    ctx.lineWidth = 1;
+    for (let lane = 1; lane < Math.ceil(w / laneWidth); lane += 1) {
+      ctx.beginPath();
+      ctx.moveTo(lane * laneWidth, 0);
+      ctx.lineTo(lane * laneWidth, h - 18);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
     ctx.fillStyle = "#0c1420";
     ctx.fillRect(0, h - 18, w, 18);
     ctx.strokeStyle = "#30465b";
