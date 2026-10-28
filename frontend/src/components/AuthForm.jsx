@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ApiError, loginUser, registerUser } from "@/lib/api-client";
+import { ApiError, loginUser, registerUser, storeAuthToken } from "@/lib/api-client";
 import { useAuth } from "@/components/AuthProvider";
 
 const initialValues = { name: "", email: "", password: "" };
@@ -56,6 +56,7 @@ export default function AuthForm({ mode }) {
         ? await registerUser(values)
         : await loginUser({ email: values.email, password: values.password });
 
+      storeAuthToken(body.token);
       setUser(body.user);
       setSuccess(isRegister ? "Account created. Taking you to the game..." : "Welcome back. Loading the game...");
       router.push("/play");

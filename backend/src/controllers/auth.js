@@ -32,8 +32,9 @@ export async function register(request, response, next) {
       email: input.email,
       passwordHash: await hashPassword(input.password),
     });
-    setAuthCookie(response, createAuthToken(user._id));
-    return response.status(201).json({ ok: true, user: serializeUser(user) });
+    const token = createAuthToken(user._id);
+    setAuthCookie(response, token);
+    return response.status(201).json({ ok: true, token, user: serializeUser(user) });
   } catch (error) {
     if (error.code === 11000) {
       return response.status(409).json({ ok: false, error: "An account with this email already exists" });
@@ -51,8 +52,9 @@ export async function login(request, response, next) {
       return response.status(401).json({ ok: false, error: "Invalid email or password" });
     }
 
-    setAuthCookie(response, createAuthToken(user._id));
-    return response.status(200).json({ ok: true, user: serializeUser(user) });
+    const token = createAuthToken(user._id);
+    setAuthCookie(response, token);
+    return response.status(200).json({ ok: true, token, user: serializeUser(user) });
   } catch (error) {
     return next(error);
   }

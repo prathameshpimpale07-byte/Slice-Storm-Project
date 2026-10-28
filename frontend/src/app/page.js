@@ -20,7 +20,7 @@ const FRUITS = [
 
 /* ── Feature cards ───────────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: "🎮", title: "One good mode",       desc: "Three lives, a pile of fruit, and bombs that really should not be touched. The speed picks up as you play.", color: "#00f5ff" },
+  { icon: "🗡️", title: "One good mode",       desc: "Three lives, a pile of fruit, and bombs that really should not be touched. The speed picks up as you play.", color: "#00f5ff" },
   { icon: "⚡", title: "Build a combo",       desc: "Catch a few fruits in the same swipe and your score starts moving quickly. The satisfying part.", color: "#39ff14" },
   { icon: "💣", title: "Watch the bombs",     desc: "Bombs cost a life, and so do missed fruits. It is simple until the screen gets busy.", color: "#ff006e" },
   { icon: "🏆", title: "Keep your best",      desc: "Finished runs are saved so you can see your best score and chase it next time.", color: "#ff8c00" },
@@ -247,7 +247,7 @@ export default function HomePage() {
                 role="img"
                 style={{ fontSize: "0.42em", marginLeft: "0.2em", verticalAlign: "0.08em" }}
               >
-                🎮
+                🗡️
               </span>
             </span>
           </h1>

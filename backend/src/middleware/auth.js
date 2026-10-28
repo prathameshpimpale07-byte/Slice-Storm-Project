@@ -4,7 +4,7 @@ import { User } from "../models/User.js";
 
 export async function requireAuth(request, response, next) {
   try {
-    const token = request.cookies?.sliceStormToken;
+    const token = getAuthToken(request);
     if (!token) {
       return response.status(401).json({ ok: false, error: "Authentication required" });
     }
@@ -26,7 +26,7 @@ export async function requireAuth(request, response, next) {
 }
 
 export async function optionalAuth(request, _response, next) {
-  const token = request.cookies?.sliceStormToken;
+  const token = getAuthToken(request);
   if (!token) return next();
 
   try {
@@ -39,4 +39,14 @@ export async function optionalAuth(request, _response, next) {
     }
     return next(error);
   }
+}
+
+function getAuthToken(request) {
+  const cookieToken = request.cookies?.sliceStormToken;
+  if (cookieToken) return cookieToken;
+
+  const authorization = request.get("authorization");
+  if (!authorization?.startsWith("Bearer ")) return null;
+
+  return authorization.slice("Bearer ".length).trim() || null;
 }

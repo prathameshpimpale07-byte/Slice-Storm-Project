@@ -1,5 +1,6 @@
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
 const REQUEST_TIMEOUT_MS = 15_000;
+const AUTH_TOKEN_KEY = "sliceStormAuthToken";
 
 export class ApiError extends Error {
   constructor(message, status, details = []) {
@@ -14,6 +15,7 @@ export async function apiRequest(path, options = {}) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   let response;
+  const authToken = getStoredAuthToken();
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
@@ -21,6 +23,7 @@ export async function apiRequest(path, options = {}) {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         ...options.headers,
       },
     });
@@ -72,7 +75,24 @@ export function loginUser(data) {
 }
 
 export function logoutUser() {
-  return apiRequest("/api/auth/logout", { method: "POST" });
+  return apiRequest("/api/auth/logout", { method: "POST" }).finally(clearStoredAuthToken);
+}
+
+export function storeAuthToken(token) {
+  if (typeof window !== "undefined" && token) {
+    window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+  }
+}
+
+function getStoredAuthToken() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+function clearStoredAuthToken() {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(AUTH_TOKEN_KEY);
+  }
 }
 
 export function startGame(data = { mode: "classic" }) {

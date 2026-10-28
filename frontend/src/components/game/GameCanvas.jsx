@@ -917,7 +917,7 @@ export default function GameCanvas() {
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%", maxWidth: "260px" }}>
             <OverlayButton onClick={handleStart} primary>
-              🎮 Start Game
+              🗡️ Start Game
             </OverlayButton>
             <OverlayButton as={Link} href="/" outline>
               ← Back to Home
