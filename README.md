@@ -2,20 +2,23 @@
 
 <img src="./frontend/public/slice-storm-logo.png" alt="Slice Storm logo" width="120" />
 
-# SLICE STORM
+# Slice Storm
 
-### A fast-paced fruit-slicing arcade game built for quick breaks and high scores.
+### A fast-paced, full-stack fruit-slicing arcade game
 
-Slice fruit. Dodge bombs. Build combos. Climb the leaderboard.
+Slice fruit, avoid bombs, build combos, and compete for the highest score.
 
 <p>
-  <a href="https://slice-storm-project-1.onrender.com/api/health">
-    <img src="https://img.shields.io/badge/API-live-39ff14?style=for-the-badge" alt="Live API" />
-  </a>
   <img src="https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React 19" />
   <img src="https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js" alt="Node.js 20 or newer" />
-  <img src="https://img.shields.io/badge/MongoDB-ready-47A248?style=for-the-badge&logo=mongodb" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb" alt="MongoDB" />
+</p>
+
+<p>
+  <a href="https://slice-storm-project-1.onrender.com/api/health">
+    <img src="https://img.shields.io/badge/API-health_check-39ff14?style=for-the-badge" alt="API health check" />
+  </a>
 </p>
 
 </div>
@@ -24,97 +27,150 @@ Slice fruit. Dodge bombs. Build combos. Climb the leaderboard.
 
 ## Contents
 
-- [Project overview](#project-overview)
-- [Highlights](#highlights)
-- [Technology](#technology)
-- [Live deployment](#live-deployment)
+- [Overview](#overview)
+- [Key features](#key-features)
+- [Technology stack](#technology-stack)
+- [Application flow](#application-flow)
+- [Architecture](#architecture)
 - [Screenshots](#screenshots)
-- [Run locally](#run-locally)
+- [Getting started](#getting-started)
 - [Environment variables](#environment-variables)
-- [How the game works](#how-the-game-works)
-- [API reference](#api-reference)
-- [Data models](#data-models)
+- [Gameplay rules](#gameplay-rules)
+- [API overview](#api-overview)
+- [Data model](#data-model)
 - [Project structure](#project-structure)
-- [Demo checklist](#demo-checklist)
+- [Security and validation](#security-and-validation)
+- [Deployment](#deployment)
+- [Testing and quality checks](#testing-and-quality-checks)
 - [Known limitations](#known-limitations)
-- [Validation](#validation)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
 
-## Project overview
+## Overview
 
-**Slice Storm** is a responsive full-stack arcade game where players create a
-profile, play a Classic fruit-slicing run, save their score, and compete with
-other players.
+Slice Storm is a responsive browser arcade game built as a full-stack
+application. Players can create an account, play a touch-friendly fruit-slicing
+game, save completed runs, review personal statistics, and compare scores on a
+public leaderboard.
 
-The project combines a polished Next.js game interface with an Express API,
-MongoDB persistence, and cookie-based authentication. The game is playable with
-mouse or touch input and is designed to work on desktop and mobile layouts.
+The application separates the interactive game client from a REST API. The
+frontend is built with Next.js and React, while the backend uses Express and
+MongoDB to manage authentication, game sessions, player statistics, and
+leaderboard data.
 
-## Highlights
+## Key features
 
-### Arcade gameplay
+### Gameplay
 
-- HTML Canvas gameplay with mouse and touch/pointer controls.
+- Canvas-based fruit-slicing gameplay with mouse, touch, and pointer input.
 - Seven fruit types with different point values.
-- Three lives per run.
-- Bombs and missed fruit reduce lives.
-- Increasing spawn rate, speed, fruit count, and bomb probability.
-- Multi-slice bonuses and combo milestone feedback.
-- Sound effects and music toggles.
+- Bomb hazards and missed-fruit penalties.
+- Three lives per Classic run.
+- Difficulty progression through faster spawns, increased fruit counts, and
+  changing bomb probability.
+- Multi-slice bonuses, combo milestones, sound effects, and music controls.
 
-### Full-stack features
+### Player experience
 
-- Account registration, login, logout, and current-user session handling.
-- HTTP-only JWT authentication cookie.
-- Authenticated game sessions owned by the player who started them.
-- Personal dashboard with score statistics and recent game history.
+- Account registration, login, logout, and session restoration.
+- Mobile-first responsive layouts for the landing page, game, dashboard, and
+  leaderboard.
+- Personal dashboard with highest score, total games, fruit count, best combo,
+  average score, and recent runs.
 - Public leaderboard with pagination.
-- Personal leaderboard rank for authenticated players.
+- Authenticated player's current leaderboard rank.
 
-### Backend quality
+### Engineering features
 
-- MongoDB persistence through Mongoose.
-- Request validation with Zod.
-- Password hashing with bcryptjs.
-- Helmet security headers.
-- Credential-aware CORS.
-- Global and authentication-specific rate limiting.
-- Basic server-side game-result integrity checks.
+- JWT authentication using an HTTP-only cookie with a bearer-token fallback for
+  browsers that restrict cross-site cookies.
+- MongoDB persistence through Mongoose models.
+- Zod request validation and structured API errors.
+- Server-side ownership and game-result integrity checks.
+- Helmet security headers, credential-aware CORS, and rate limiting.
+- Production deployment configuration for Render.
 
-## Technology
+## Technology stack
 
-| Area | Stack |
+| Area | Technology |
 | --- | --- |
-| Frontend | Next.js 16, React 19, JavaScript, CSS, HTML Canvas |
+| Frontend | Next.js 16, React 19, JavaScript |
+| UI and gameplay | CSS, HTML Canvas, Pointer Events |
 | Backend | Node.js 20+, Express 5, ES modules |
 | Database | MongoDB, Mongoose 8 |
 | Authentication | JWT, HTTP-only cookies, bcryptjs |
 | Validation | Zod |
 | Security | Helmet, CORS, express-rate-limit |
-| Deployment | Render configuration included in `render.yaml` |
+| Deployment | Render configuration in `render.yaml` |
 
-## Live deployment
+## Application flow
 
-| Service | URL | Status |
-| --- | --- | --- |
-| Backend API | [slice-storm-project-1.onrender.com](https://slice-storm-project-1.onrender.com) | Live |
-| Health check | [`/api/health`](https://slice-storm-project-1.onrender.com/api/health) | API + database status |
-| Frontend | Not configured in this repository | Run locally on port `3000` |
+### 1. Player authentication
 
-The health endpoint should return `ok: true` when the API and MongoDB connection
-are available. A public frontend URL should be added here when the frontend is
-deployed separately.
+1. A player registers or logs in from the Next.js frontend.
+2. The API validates the input and verifies the password hash.
+3. The server creates a signed JWT and sets the authentication cookie.
+4. The response also includes a token fallback for mobile browsers that do not
+   retain cross-site cookies.
+5. The frontend restores the current session through `GET /api/auth/me`.
+
+### 2. Starting a game
+
+1. The authenticated player opens the Play screen.
+2. The frontend requests a new game session from the API.
+3. The API creates an active session owned by the current user.
+4. The game canvas starts the local physics, collision, scoring, and audio
+   systems.
+
+### 3. Completing a game
+
+1. The player finishes the run by losing all lives or completing the run.
+2. The frontend submits the result with the server-issued session ID.
+3. The API verifies session ownership, status, duration, and numeric ranges.
+4. The completed game is stored and the user's aggregate statistics are
+   updated.
+5. The frontend refreshes the player state and displays the result.
+
+### 4. Dashboard and leaderboard
+
+1. Dashboard requests are authenticated with the session cookie or bearer
+   token.
+2. The API returns player statistics and recent game history.
+3. Public leaderboard results can be browsed without signing in.
+4. The authenticated rank endpoint returns the current player's position.
+
+## Architecture
+
+```text
+┌─────────────────────┐      HTTPS/JSON       ┌────────────────────────┐
+│  Next.js Frontend   │ ────────────────────▶ │  Express REST API      │
+│                     │ ◀──────────────────── │                        │
+│  Pages and UI       │                       │  Routes                │
+│  Auth provider      │                       │  Controllers           │
+│  API client         │                       │  Auth middleware        │
+│  Game canvas        │                       │  Validation             │
+└──────────┬──────────┘                       └───────────┬────────────┘
+           │                                              │
+           │ Cookie / bearer token                         │ Mongoose
+           │                                              │
+           │                                      ┌─────────▼──────────┐
+           └────────────────────────────────────▶│ MongoDB            │
+                                                  │ Users and games    │
+                                                  └────────────────────┘
+```
+
+The frontend owns rendering and real-time gameplay interaction. The backend
+owns authentication, game-session ownership, persistence, statistics, and
+leaderboard queries. This separation keeps the game responsive while keeping
+player data and protected operations behind the API.
 
 ## Screenshots
-
-These final application captures were supplied from the real Slice Storm
-interface. Each image is stored inside the repository so it renders directly
-on GitHub and in Markdown preview.
 
 ### Landing page
 
 ![Slice Storm landing page](./docs/screenshots/landing.png)
 
-### Player registration
+### Registration
 
 ![Slice Storm registration page](./docs/screenshots/register.png)
 
@@ -122,19 +178,19 @@ on GitHub and in Markdown preview.
 
 ![Slice Storm play menu](./docs/screenshots/play-menu.png)
 
-### Live gameplay
+### Gameplay
 
-![Slice Storm live gameplay](./docs/screenshots/gameplay.png)
+![Slice Storm gameplay](./docs/screenshots/gameplay.png)
 
 ### Dashboard
 
-![Slice Storm player dashboard](./docs/screenshots/dashboard.png)
+![Slice Storm dashboard](./docs/screenshots/dashboard.png)
 
 ### Leaderboard
 
 ![Slice Storm leaderboard](./docs/screenshots/leaderboard.png)
 
-## Run locally
+## Getting started
 
 ### Prerequisites
 
@@ -149,14 +205,14 @@ git clone https://github.com/prathameshpimpale07-byte/Slice-Storm-Project.git
 cd "Slice-Storm-Project"
 ```
 
-### 2. Configure and run the backend
+### 2. Install backend dependencies
 
 ```powershell
 cd backend
 npm install
 ```
 
-Create `backend/.env` using the template below:
+Create `backend/.env`:
 
 ```dotenv
 PORT=5000
@@ -166,15 +222,15 @@ FRONTEND_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
-Start the API:
+Start the backend:
 
 ```powershell
 npm run dev
 ```
 
-The backend runs at [http://localhost:5000](http://localhost:5000).
+The API is available at `http://localhost:5000`.
 
-### 3. Configure and run the frontend
+### 3. Install and run the frontend
 
 Open a second terminal:
 
@@ -195,7 +251,7 @@ Start Next.js:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000`.
 
 ### Production frontend build
 
@@ -207,29 +263,26 @@ npm start
 
 ## Environment variables
 
-Only variable names and safe placeholders belong in documentation. Never commit
-real database credentials, JWT secrets, cookies, or production environment
-files.
+Never commit real credentials, tokens, cookies, database URLs, or production
+environment files. Use safe local values only.
 
 | Variable | Service | Required | Description |
 | --- | --- | --- | --- |
-| `PORT` | Backend | No | HTTP port; defaults to `5000` locally |
+| `PORT` | Backend | No | API port; defaults to `5000` |
 | `MONGODB_URI` | Backend | Yes | MongoDB connection string |
-| `JWT_SECRET` | Backend | Yes | JWT signing secret; minimum 32 characters |
+| `JWT_SECRET` | Backend | Yes | JWT secret; minimum 32 characters |
 | `FRONTEND_URL` | Backend | No | Allowed frontend origin for credentialed CORS |
 | `NODE_ENV` | Backend | No | `development`, `test`, or `production` |
 | `NEXT_PUBLIC_API_URL` | Frontend | No | Backend base URL |
 
-The backend validates its environment on startup. A missing MongoDB URI or
-invalid JWT secret prevents the service from starting, which makes deployment
-configuration errors visible instead of silently falling back.
+The backend validates required environment variables at startup. This makes
+configuration errors visible instead of silently falling back to unsafe
+defaults.
 
-## How the game works
+## Gameplay rules
 
-### Gameplay rules
-
-1. A Classic run starts with **three lives**.
-2. Drag through fruit with a mouse or swipe across it on a touch device.
+1. A Classic run starts with three lives.
+2. Slice fruit by dragging across it with a mouse or touch pointer.
 3. Missing fruit costs one life.
 4. Hitting a bomb costs one life.
 5. The run ends when all lives are lost.
@@ -248,52 +301,38 @@ configuration errors visible instead of silently falling back.
 | Watermelon | 20 |
 | Pineapple | 25 |
 
-### Combo and multi-slice scoring
+Each fruit contributes its base value. A multi-slice adds
+`5 × (number of fruits - 1)` bonus points. Combo feedback appears at ×3, ×5,
+and ×10.
 
-- Every fruit contributes its base point value.
-- A multi-slice adds `5 × (number of fruits - 1)` bonus points.
-- Combo milestone feedback appears at ×3, ×5, and ×10.
-- The game UI supports a maximum displayed combo multiplier of ×4.
+## API overview
 
-Example: slicing three fruits worth 10, 12, and 15 points gives
-`10 + 12 + 15 + (2 × 5) = 47` points.
+All endpoints return JSON. Protected endpoints accept the authentication cookie
+or an `Authorization: Bearer <token>` header. Invalid or missing credentials
+return `401 Unauthorized`.
 
-## API reference
-
-All endpoints return JSON. Registering or logging in creates an HTTP-only
-authentication cookie and returns an access token for browsers that
-block cross-site cookies (common on some mobile browsers). The frontend stores
-that token locally and sends it as a Bearer token when needed. Browser requests
-also use credentials, and protected routes return `401 Unauthorized` when both
-authentication methods are missing or invalid.
-
-### Health
+### Health and authentication
 
 | Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| `GET` | `/api/health` | Public | Reports API and MongoDB connection state |
-
-### Authentication
-
-| Method | Endpoint | Auth | Request |
-| --- | --- | --- | --- |
-| `POST` | `/api/auth/register` | Public | `{ name, email, password }` |
-| `POST` | `/api/auth/login` | Public | `{ email, password }` |
-| `POST` | `/api/auth/logout` | Public | No body; clears the cookie |
-| `GET` | `/api/auth/me` | Optional | Returns the current user or `user: null` |
+| `GET` | `/api/health` | Public | API and database status |
+| `POST` | `/api/auth/register` | Public | Create an account |
+| `POST` | `/api/auth/login` | Public | Authenticate a player |
+| `POST` | `/api/auth/logout` | Public | Clear the session |
+| `GET` | `/api/auth/me` | Optional | Return the current player |
 
 Registration passwords must contain 8–128 characters. Authentication attempts
 are rate-limited to 20 requests per 15 minutes.
 
 ### Games
 
-| Method | Endpoint | Auth | Request |
+| Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| `POST` | `/api/games/start` | Required | `{ "mode": "classic" }` |
-| `POST` | `/api/games/complete` | Required | Game result payload |
-| `GET` | `/api/games/history` | Required | Optional `?limit=20`, capped at 50 |
+| `POST` | `/api/games/start` | Required | Start an active game session |
+| `POST` | `/api/games/complete` | Required | Validate and save a result |
+| `GET` | `/api/games/history` | Required | Return recent player games |
 
-The complete-game payload contains:
+Example completion payload:
 
 ```json
 {
@@ -307,46 +346,37 @@ The complete-game payload contains:
 }
 ```
 
-The server verifies session ownership, active status, duration, score range,
-fruit rate, bomb rate, and combo range before updating player statistics.
-
 ### Leaderboard
 
-| Method | Endpoint | Auth | Request |
+| Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| `GET` | `/api/leaderboard` | Public | Optional `?page=1&limit=10` |
-| `GET` | `/api/leaderboard/me` | Required | No body |
+| `GET` | `/api/leaderboard` | Public | Paginated global leaderboard |
+| `GET` | `/api/leaderboard/me` | Required | Current player's rank |
 
-Leaderboard pagination accepts pages from `1` and limits from `1` to `50`.
+Leaderboard pages support `page` and `limit` query parameters. Limits are
+capped at 50 records per request.
 
-## Data models
+## Data model
 
-### `User`
+### User
 
-| Field | Description |
-| --- | --- |
-| `name` | Player display name |
-| `email` | Unique, normalized email address |
-| `passwordHash` | Bcrypt hash; excluded from normal responses |
-| `highestScore` | Player's best score |
-| `totalGames` | Number of completed games |
-| `totalFruitsSliced` | Total fruit sliced across completed games |
-| `bestCombo` | Player's best combo |
+Stores identity and aggregate player statistics:
 
-### `Game`
+- `name`, `email`, and `passwordHash`
+- `highestScore`
+- `totalGames`
+- `totalFruitsSliced`
+- `bestCombo`
 
-| Field | Description |
-| --- | --- |
-| `user` | Owning `User` reference |
-| `sessionId` | Unique server-generated game session |
-| `mode` | Currently `classic` |
-| `score` | Final score |
-| `fruitsSliced` | Fruit sliced during the run |
-| `bombsHit` | Bombs hit during the run |
-| `maxCombo` | Highest combo in the run |
-| `accuracy` | Reported accuracy from 0 to 100 |
-| `durationSeconds` | Run duration |
-| `status` | `active` or `completed` |
+### Game
+
+Stores an owned game session and its completed result:
+
+- `user` reference and unique `sessionId`
+- `mode` and `status`
+- `score`, `fruitsSliced`, `bombsHit`, and `maxCombo`
+- `accuracy` and `durationSeconds`
+- Creation and completion timestamps
 
 ## Project structure
 
@@ -354,62 +384,79 @@ Leaderboard pagination accepts pages from `1` and limits from `1` to `50`.
 .
 ├── backend/
 │   ├── src/
-│   │   ├── config/          MongoDB connection
-│   │   ├── controllers/     Auth, games, leaderboard
-│   │   ├── middleware/      Auth and request middleware
-│   │   ├── models/          User and Game schemas
-│   │   ├── routes/          API route definitions
-│   │   └── services/        Password and JWT helpers
-│   ├── GAME-VALIDATION.md   Result-integrity notes
+│   │   ├── app.js             Express app, middleware, and environment config
+│   │   ├── server.js          Database connection and HTTP startup
+│   │   ├── config/            MongoDB connection setup
+│   │   ├── controllers/       Auth, game, and leaderboard handlers
+│   │   ├── middleware/        Authentication and request middleware
+│   │   ├── models/            User and Game schemas
+│   │   ├── routes/            REST API route definitions
+│   │   └── services/          Password hashing and JWT helpers
+│   ├── GAME-VALIDATION.md     Game-result integrity notes
 │   └── package.json
 ├── frontend/
-│   ├── public/               Logo and static assets
+│   ├── public/                 Logo and static assets
 │   ├── src/
-│   │   ├── app/              Pages and layouts
-│   │   ├── components/       UI, auth, and game components
-│   │   ├── game/             Physics, collision, scoring, audio
-│   │   └── lib/              API client
+│   │   ├── app/                Next.js pages and layouts
+│   │   ├── components/         Shared UI, auth, and game components
+│   │   ├── game/               Physics, collision, scoring, and audio
+│   │   └── lib/                API client utilities
 │   ├── .env.example
 │   └── package.json
-├── docs/screenshots/         Application screenshots
-├── render.yaml               Render service configuration
+├── docs/screenshots/           Product screenshots
+├── render.yaml                 Render deployment configuration
 └── README.md
 ```
 
-## Demo checklist
+## Security and validation
 
-For the required 2–5 minute demonstration, follow this sequence:
+- Passwords are hashed with bcryptjs and are never returned in API responses.
+- JWTs are signed with a server-only secret and expire after seven days.
+- Authentication cookies are `HttpOnly`, `Secure` in production, and scoped to
+  the application path.
+- Credential-aware CORS restricts browser access to the configured frontend.
+- Helmet adds standard security headers.
+- Global and authentication-specific rate limits reduce abuse.
+- Zod validates request bodies and query parameters.
+- Game completion verifies ownership, active status, duration, score range,
+  fruit rate, bomb rate, and combo range.
 
-1. Open **SLICE STORM**.
-2. Start the game.
-3. Slice fruit.
-4. Demonstrate a multi-slice.
-5. Demonstrate a combo milestone.
-6. Hit a bomb.
-7. Show game over and the final score.
-8. Log in.
-9. Show the dashboard.
-10. Show the leaderboard.
-11. Resize to a mobile viewport or demonstrate responsive behavior on a phone.
+These checks provide basic integrity protection. Because gameplay runs in the
+browser, they are not a replacement for server-authoritative anti-cheat
+systems.
 
-The repository includes still-image evidence in
-[`docs/screenshots/`](./docs/screenshots/). The binary demo video must be
-recorded separately and included in the final submission package.
+## Deployment
 
-## Known limitations
+The repository includes a Render service definition in `render.yaml`.
 
-- Classic mode is the only available game mode.
-- Scores are client-reported and receive range/integrity validation, not
-  server-authoritative anti-cheat protection.
-- The leaderboard stores completed game entries, so one player may appear in
-  multiple rows.
-- No public frontend deployment URL is configured in this repository.
-- Audio availability depends on browser autoplay and audio-context policies.
-- MongoDB is required for login, saved games, dashboard history, and rankings.
+### Backend on Render
 
-## Validation
+Configure these environment variables in the Render dashboard:
 
-Run the frontend checks before submission:
+```text
+NODE_ENV=production
+MONGODB_URI=<production MongoDB connection string>
+JWT_SECRET=<production secret with at least 32 characters>
+FRONTEND_URL=<deployed frontend URL>
+```
+
+Render installs dependencies from `backend/package.json` and starts the service
+with `npm start`.
+
+### Frontend deployment
+
+Deploy the `frontend` directory to a Next.js-compatible host and configure:
+
+```text
+NEXT_PUBLIC_API_URL=<deployed backend URL>
+```
+
+Use HTTPS URLs in production. The backend `FRONTEND_URL` must exactly match the
+frontend origin and must not include a trailing slash.
+
+## Testing and quality checks
+
+Run the frontend lint and production build:
 
 ```powershell
 cd frontend
@@ -417,23 +464,57 @@ npm run lint
 npm run build
 ```
 
-Run the backend after configuring `backend/.env`:
+Run backend syntax checks and start the API after configuring the environment:
 
 ```powershell
 cd backend
+node --check src/app.js
 npm start
 ```
 
-Then verify:
+Then verify the service health:
 
 ```text
 GET http://localhost:5000/api/health
 ```
 
+## Known limitations
+
+- Classic mode is currently the only available game mode.
+- Score integrity checks are range-based; the client still reports gameplay
+  results.
+- A player can appear in multiple leaderboard rows through multiple completed
+  games.
+- Audio behavior depends on browser autoplay and audio-context policies.
+- MongoDB is required for authentication, saved games, dashboard history, and
+  rankings.
+
+## Roadmap
+
+- Add additional game modes and configurable difficulty.
+- Introduce server-authoritative event validation for stronger anti-cheat
+  protection.
+- Add automated backend integration tests and frontend gameplay tests.
+- Add player profile customization and achievement badges.
+- Add observability for API performance, errors, and database health.
+
+## Contributing
+
+1. Create a focused branch from `main`.
+2. Keep changes scoped to one feature or fix.
+3. Follow the existing project structure and naming conventions.
+4. Run lint, build, and relevant backend checks before opening a pull request.
+5. Include a clear description of behavior changes and validation performed.
+
+## License
+
+This project is maintained as an educational and portfolio application. Add a
+formal license before redistributing it as open-source software.
+
 ---
 
 <div align="center">
 
-Made with fruit, physics, and a little competitive energy.
+Built with fruit, physics, and a little competitive energy.
 
 </div>
