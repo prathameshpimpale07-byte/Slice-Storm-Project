@@ -1168,6 +1168,140 @@ body {
       }
     }
 
+    /* Keep the landing page playful without making every element look automated. */
+    .landing-hero {
+      min-height: 680px;
+      background: #101827 !important;
+    }
+
+    .landing-hero::before,
+    .orb,
+    .landing-hero .float,
+    .pulse-btn {
+      display: none !important;
+    }
+
+    .landing-hero h1 {
+      letter-spacing: -0.06em;
+    }
+
+    .landing-hero .grad-text,
+    .features-section .grad-text,
+    .mode-section .grad-text {
+      background: none;
+      color: #72d6ef;
+      -webkit-text-fill-color: currentColor;
+    }
+
+    .btn-primary,
+    .btn-outline {
+      border-radius: 6px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-family: "Inter", sans-serif;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: #72d6ef;
+      box-shadow: 3px 3px 0 #244052;
+    }
+
+    .btn-primary:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #244052;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #53677d;
+      color: #d3e2ef;
+    }
+
+    .btn-outline:hover {
+      background: #1a2a3d;
+      border-color: #72d6ef;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .glass,
+    .glass-sm,
+    .glass-glow {
+      background: #172437;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid #2d435a;
+      border-radius: 10px;
+      box-shadow: 0 8px 0 rgba(5, 12, 22, .22);
+    }
+
+    .glass::before,
+    .glass::after,
+    .glass-glow::before {
+      display: none;
+    }
+
+    .feature-card,
+    .step-card,
+    .mode-card {
+      transform: none;
+    }
+
+    .feature-card:hover,
+    .step-card:hover,
+    .mode-card:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 10px 0 rgba(5, 12, 22, .22);
+    }
+
+    .features-section,
+    .how-section,
+    .mode-section,
+    .cta-section {
+      background: #0e1725 !important;
+    }
+
+    .how-section::before,
+    .features-section::after,
+    .how-section::after,
+    .divider-glow {
+      display: none;
+    }
+
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .navbar {
+      background: #0c1420;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom-color: #24384d;
+    }
+
+    .brand-link:hover .brand-logo-image {
+      transform: none;
+      box-shadow: 0 0 18px rgba(34, 211, 238, .28);
+    }
+
+    .nav-link:hover,
+    .nav-link.active,
+    .mobile-nav-link.active,
+    .mobile-nav-link:hover {
+      background: #17283a;
+    }
+
+    .auth-card {
+      box-shadow: 0 12px 0 rgba(5, 12, 22, .3);
+    }
+
+    .auth-orb {
+      display: none;
+    }
+
     .landing-hero {
       min-height: calc(100svh - 68px);
     }
