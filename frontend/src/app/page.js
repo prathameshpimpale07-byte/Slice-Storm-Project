@@ -1,10 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { GAME_MODE_COUNT, INITIAL_LIVES, MAX_COMBO_MULTIPLIER } from "@/game/constants";
+
+/* ── Static fruit emoji list for decorative floating display ─────────────── */
+const FRUITS = [
+  { emoji: "🍉", top: "12%",  left: "6%",   delay: "0s",   size: "3.5rem" },
+  { emoji: "🍊", top: "22%",  right: "8%",  delay: "0.8s", size: "2.8rem" },
+  { emoji: "🍎", top: "52%",  left: "4%",   delay: "1.6s", size: "2.5rem" },
+  { emoji: "🍋", top: "58%",  right: "6%",  delay: "0.4s", size: "3rem" },
+  { emoji: "🍇", top: "28%",  left: "14%",  delay: "1.2s", size: "2.2rem" },
+  { emoji: "🥭", top: "35%",  right: "16%", delay: "2s",   size: "2.6rem" },
+  { emoji: "🍑", top: "70%",  left: "12%",  delay: "1.8s", size: "2.4rem" },
+  { emoji: "🫐", top: "15%",  right: "20%", delay: "2.4s", size: "2rem" },
+];
 
 /* ── Feature cards ───────────────────────────────────────────────────────── */
 const FEATURES = [
@@ -47,6 +59,80 @@ function useRevealOnScroll() {
   }, []);
 }
 
+/* ── Particle canvas background ──────────────────────────────────────────── */
+function ParticleBackground() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animId;
+    let particles = [];
+
+    function resize() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    // Create particles
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.4 + 0.1,
+        color: ["#00f5ff", "#ff006e", "#39ff14"][Math.floor(Math.random() * 3)],
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      animId = requestAnimationFrame(draw);
+    }
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    />
+  );
+}
+
 export default function HomePage() {
   useRevealOnScroll();
 
@@ -74,6 +160,38 @@ export default function HomePage() {
             "#0a0e1a",
         }}
       >
+        {/* Particle canvas */}
+        <ParticleBackground />
+
+        {/* Decorative glowing orbs */}
+        <div className="orb orb-cyan" style={{ width: "400px", height: "400px", top: "-10%", left: "-5%" }} />
+        <div className="orb orb-magenta" style={{ width: "300px", height: "300px", bottom: "10%", right: "-3%" }} />
+        <div className="orb orb-lime" style={{ width: "250px", height: "250px", top: "60%", left: "20%", animationDelay: "2s" }} />
+
+        {/* Floating fruit emojis — purely decorative */}
+        {FRUITS.map((f) => (
+          <span
+            key={f.emoji + f.top}
+            aria-hidden="true"
+            className="float"
+            style={{
+              position: "absolute",
+              top: f.top,
+              left: f.left || "auto",
+              right: f.right || "auto",
+              fontSize: f.size,
+              animationDelay: f.delay,
+              pointerEvents: "none",
+              userSelect: "none",
+              opacity: 0.35,
+              filter: "drop-shadow(0 0 8px rgba(255,255,255,0.15))",
+              zIndex: 1,
+            }}
+          >
+            {f.emoji}
+          </span>
+        ))}
+
         {/* Hero content */}
         <div className="slide-up hero-content" style={{ position: "relative", zIndex: 10, maxWidth: "720px", margin: "0 auto" }}>
           {/* Badge */}
@@ -149,9 +267,6 @@ export default function HomePage() {
             <br />
             <span style={{ color: "rgba(255,255,255,0.85)" }}>How long can you keep the kitchen tidy?</span>
           </p>
-          <p className="hero-note slide-up-delay-2">
-            <span aria-hidden="true">✦</span> Tip: short, clean swipes are easier to control.
-          </p>
 
           {/* CTA Buttons */}
           <div
@@ -209,21 +324,6 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-
-        <aside className="hero-scorecard" aria-label="Example game score">
-          <div className="hero-scorecard-top">
-            <span>LAST RUN</span>
-            <span className="hero-live-dot">●</span>
-          </div>
-          <div className="hero-score">248</div>
-          <div className="hero-score-label">points before the bomb</div>
-          <div className="hero-mini-stats">
-            <span><b>×4</b> combo</span>
-            <span><b>17</b> sliced</span>
-          </div>
-          <div className="hero-scorebar"><span /></div>
-          <p>Beat this score<br />if you can.</p>
-        </aside>
 
         {/* Bottom fade */}
         <div
@@ -527,7 +627,7 @@ export default function HomePage() {
               margin: "0 auto 2rem",
               lineHeight: 1.7,
             }}>
-              Make a profile, play a quick round, and leave your mark on the score board.
+              Create your free account. Your scores are saved, ranked globally, and waiting to be beaten.
             </p>
             <div style={{
               display: "flex",

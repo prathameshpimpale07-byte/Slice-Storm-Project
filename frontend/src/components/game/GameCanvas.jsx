@@ -22,12 +22,12 @@ import {
 } from "@/game/audio";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   GameCanvas — Fruit spawning and slicing
+   GameCanvas — Fruit spawning
    ─────────────────
    • Client component with a full-screen HTML5 canvas
    • Canvas auto-resizes to its container
    • requestAnimationFrame loop with proper cleanup
-   • HUD: score, combo, lives (readable on mobile)
+   • Placeholder HUD: score, combo, lives (readable on mobile)
    • Overlays: main menu, pause, restart, game-over
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -123,32 +123,26 @@ export default function GameCanvas() {
     // Clear canvas
     ctx.clearRect(0, 0, w, h);
 
-    // Keep the play area quiet so the fruit and the swipe are easy to read.
-    ctx.fillStyle = "#101a29";
+    // Keep the playfield calm so the fruit and the slice trail stay readable.
+    ctx.fillStyle = "#111a27";
     ctx.fillRect(0, 0, w, h);
-    const laneWidth = Math.max(90, w / 6);
-    for (let lane = 0; lane < Math.ceil(w / laneWidth); lane += 1) {
-      ctx.fillStyle = lane % 2 === 0 ? "rgba(114,214,239,.025)" : "rgba(255,184,107,.018)";
-      ctx.fillRect(lane * laneWidth, 0, laneWidth, h - 18);
-    }
-    ctx.strokeStyle = "rgba(114,214,239,.09)";
-    ctx.setLineDash([3, 10]);
+
+    ctx.strokeStyle = "rgba(139, 173, 194, 0.06)";
     ctx.lineWidth = 1;
-    for (let lane = 1; lane < Math.ceil(w / laneWidth); lane += 1) {
+    for (let x = -h; x < w + h; x += 56) {
       ctx.beginPath();
-      ctx.moveTo(lane * laneWidth, 0);
-      ctx.lineTo(lane * laneWidth, h - 18);
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + h, h);
       ctx.stroke();
     }
-    ctx.setLineDash([]);
-    ctx.fillStyle = "#0c1420";
-    ctx.fillRect(0, h - 18, w, 18);
-    ctx.strokeStyle = "#30465b";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, h - 18.5);
-    ctx.lineTo(w, h - 18.5);
-    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.035)";
+    for (let y = 72; y < h; y += 72) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
 
     const trailCutoff = timestamp - TRAIL_DURATION_MS;
     pointerTrailRef.current = pointerTrailRef.current.filter(
@@ -339,6 +333,44 @@ export default function GameCanvas() {
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
     }
+
+    // ── Draw subtle grid lines ───────────────────────────────────────
+    ctx.strokeStyle = "rgba(0,245,255,0.03)";
+    ctx.lineWidth = 0.5;
+    const gridSpacing = 60;
+    for (let x = 0; x < w; x += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 0; y < h; y += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    // ── Draw center "Ready" text when playing (placeholder) ──────────
+    if (gameStateRef.current === STATE.PLAYING) {
+      const pulse = Math.sin(timestamp * 0.002) * 0.15 + 0.85;
+      ctx.globalAlpha = 0.08 * pulse;
+      ctx.font = `bold ${Math.min(w * 0.12, 90)}px 'Exo 2', sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#00f5ff";
+      ctx.fillText("SLICE!", w / 2, h / 2);
+      ctx.globalAlpha = 1;
+    }
+
+    // ── Decorative border glow ───────────────────────────────────────
+    const borderGrad = ctx.createLinearGradient(0, 0, w, 0);
+    borderGrad.addColorStop(0, "rgba(0,245,255,0)");
+    borderGrad.addColorStop(0.5, "rgba(0,245,255,0.15)");
+    borderGrad.addColorStop(1, "rgba(0,245,255,0)");
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, w, h);
 
     ctx.restore();
 
@@ -670,8 +702,7 @@ export default function GameCanvas() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "#0c1420",
-            borderBottom: "1px solid #2d435a",
+            background: "linear-gradient(to bottom, rgba(8,12,23,0.85) 0%, transparent 100%)",
             pointerEvents: "none",
           }}
         >
@@ -877,13 +908,8 @@ export default function GameCanvas() {
             maxWidth: "320px",
             lineHeight: 1.6,
           }}>
-            Fruit is good. Bombs are not. See how far you get.
+            Slash fruits. Dodge bombs. Climb the leaderboard.
           </p>
-          <div className="game-rules" aria-label="Game rules">
-            <span><b>3</b> lives</span>
-            <span><b>1</b> point per fruit</span>
-            <span>bombs cost a life</span>
-          </div>
           {startError && (
             <p role="alert" style={{ color: "#ff6b9d", fontSize: "0.8rem", marginBottom: "1rem" }}>
               {startError}
@@ -1055,25 +1081,38 @@ function Overlay({ children }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(8,12,23,0.88)",
+        background: "rgba(8,12,23,0.85)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         padding: "1rem",
       }}
     >
       <div
         className="game-overlay-card"
         style={{
-          background: "#172437",
-          border: "1px solid #2d435a",
-          borderRadius: "10px",
+          background: "rgba(15,20,40,0.7)",
+          backdropFilter: "blur(24px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(24px) saturate(1.8)",
+          border: "1px solid rgba(0,245,255,0.12)",
+          borderRadius: "24px",
           padding: "2.5rem 2rem",
           textAlign: "center",
           maxWidth: "400px",
           width: "100%",
           position: "relative",
           overflow: "hidden",
-          boxShadow: "0 10px 0 rgba(5, 12, 22, .3)",
+          animation: "slideUp 0.4s cubic-bezier(.16,1,.3,1) forwards",
         }}
       >
+        {/* Inner glow */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(ellipse at 50% 0%, rgba(0,245,255,0.06) 0%, transparent 60%)",
+            pointerEvents: "none",
+          }}
+        />
         <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
           {children}
         </div>
@@ -1093,14 +1132,14 @@ function OverlayButton({ children, onClick, primary, outline, as: Component = "b
     gap: "0.4rem",
     width: "100%",
     padding: "0.75rem 1.5rem",
-    borderRadius: "6px",
-    fontFamily: "'Inter', sans-serif",
+    borderRadius: "12px",
+    fontFamily: "'Exo 2', sans-serif",
     fontWeight: 700,
     fontSize: "0.9rem",
-    letterSpacing: 0,
+    letterSpacing: "0.04em",
     textTransform: "uppercase",
     cursor: "pointer",
-    transition: "transform 0.15s ease, background 0.15s ease",
+    transition: "all 0.22s cubic-bezier(.4,0,.2,1)",
     textDecoration: "none",
     border: "none",
     outline: "none",
@@ -1108,16 +1147,16 @@ function OverlayButton({ children, onClick, primary, outline, as: Component = "b
 
   const primaryStyle = {
     ...baseStyle,
-    background: "#72d6ef",
+    background: "linear-gradient(135deg, #00f5ff 0%, #0077ff 100%)",
     color: "#080c17",
-    boxShadow: "3px 3px 0 #244052",
+    boxShadow: "0 4px 24px rgba(0,245,255,0.3)",
   };
 
   const outlineStyle = {
     ...baseStyle,
-    background: "transparent",
-    color: "#d3e2ef",
-    border: "1px solid #53677d",
+    background: "rgba(0,245,255,0.05)",
+    color: "#00f5ff",
+    border: "1.5px solid rgba(0,245,255,0.3)",
   };
 
   return (
@@ -1126,18 +1165,20 @@ function OverlayButton({ children, onClick, primary, outline, as: Component = "b
       style={primary ? primaryStyle : outlineStyle}
       onMouseEnter={(e) => {
         if (primary) {
-          e.currentTarget.style.transform = "translate(-1px, -1px)";
-          e.currentTarget.style.boxShadow = "4px 4px 0 #244052";
+          e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
+          e.currentTarget.style.boxShadow = "0 8px 36px rgba(0,245,255,0.5)";
         } else {
-          e.currentTarget.style.background = "#1f3449";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.background = "rgba(0,245,255,0.1)";
+          e.currentTarget.style.boxShadow = "0 0 24px rgba(0,245,255,0.2)";
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translate(0, 0)";
+        e.currentTarget.style.transform = "translateY(0) scale(1)";
         if (primary) {
-          e.currentTarget.style.boxShadow = "3px 3px 0 #244052";
+          e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,245,255,0.3)";
         } else {
-          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.background = "rgba(0,245,255,0.05)";
           e.currentTarget.style.boxShadow = "none";
         }
       }}
