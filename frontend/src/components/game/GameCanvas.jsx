@@ -46,7 +46,6 @@ const SCORE_LABEL_DURATION_MS = 700;
 const COMBO_MESSAGE_DURATION_MS = 900;
 const SCREEN_FLASH_DURATION_MS = 120;
 const BOMB_ANIMATION_DURATION_MS = 220;
-const MAX_MISSES = 3;
 
 /* ── Background star particles for canvas ────────────────────────────────── */
 function createStars(count, w, h) {
@@ -234,9 +233,12 @@ export default function GameCanvas() {
         ));
       if (fruitUpdate.missed.length > 0) {
         const nextMisses = missesRef.current + fruitUpdate.missed.length;
+        const nextLives = Math.max(0, livesRef.current - fruitUpdate.missed.length);
         missesRef.current = nextMisses;
+        livesRef.current = nextLives;
         setMisses(nextMisses);
-        if (nextMisses >= MAX_MISSES) {
+        setLives(nextLives);
+        if (nextLives === 0) {
           gameStateRef.current = STATE.GAME_OVER;
           loopRunningRef.current = false;
           setGameState(STATE.GAME_OVER);
@@ -895,7 +897,7 @@ export default function GameCanvas() {
                 fontWeight: 600,
                 marginBottom: "2px",
               }}>
-                Misses
+                Missed
               </div>
               <div style={{
                 fontFamily: "'Exo 2', sans-serif",
@@ -904,7 +906,7 @@ export default function GameCanvas() {
                 color: misses > 1 ? "#ff006e" : "#ff8c00",
                 lineHeight: 1,
               }}>
-                {misses}/{MAX_MISSES}
+                {misses}
               </div>
             </div>
           </div>

@@ -20,7 +20,7 @@ const FRUITS = [
 
 /* ── Feature cards ───────────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: "🎮", title: "Classic Mode",        desc: "Slice fruits, dodge bombs, and survive 3 lives. Difficulty ramps every 30 seconds.", color: "#00f5ff" },
+  { icon: "🎮", title: "Classic Mode",        desc: "Slice fruits, dodge bombs, and protect your 3 lives. Difficulty ramps every 30 seconds.", color: "#00f5ff" },
   { icon: "⚡", title: "Combo Multipliers",   desc: "Slice 3+ fruits in one swipe for ×2–×4 combo bonuses and sky-high scores.", color: "#39ff14" },
   { icon: "💣", title: "Bombs & Penalties",   desc: "Hit a bomb and lose a life. Miss 3 fruits and it's game over — stay sharp!", color: "#ff006e" },
   { icon: "🏆", title: "Global Leaderboard",  desc: "Scores are validated server-side and ranked globally. Claim your spot at the top.", color: "#ff8c00" },
@@ -541,7 +541,7 @@ export default function HomePage() {
                 margin: "0 auto 1.5rem",
                 lineHeight: 1.7,
               }}>
-                Survive as long as possible. Slice every fruit — miss 3 and it&apos;s over.
+                Survive as long as possible. Slice every fruit — each miss costs a life.
                 Slice bombs carefully — each one costs a life. Difficulty escalates every 30 seconds.
               </p>
               <div style={{

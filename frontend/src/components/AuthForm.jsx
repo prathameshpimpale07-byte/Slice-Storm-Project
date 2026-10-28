@@ -93,13 +93,13 @@ export default function AuthForm({ mode }) {
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {isRegister && (
             <label className="auth-field">
-              <span>Display name</span>
+              <span>Player name</span>
               <input
                 className="input-field"
                 name="name"
                 value={values.name}
                 onChange={updateField}
-                placeholder="Your player name"
+                placeholder="Choose your player name"
                 autoComplete="name"
                 aria-invalid={Boolean(fieldErrors.name)}
               />
