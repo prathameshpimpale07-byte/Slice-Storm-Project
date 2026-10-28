@@ -38,15 +38,15 @@ export default function Footer() {
 
         {/* Copy */}
         <p style={{ color: "#8892a4", fontSize: "0.72rem", textAlign: "center" }}>
-          VELoop Rewards · Full Stack Internship Project
+          Made for quick breaks and high scores.
         </p>
 
         {/* Links */}
         <nav style={{ display: "flex", gap: "1.25rem", fontSize: "0.75rem" }}>
           {[
-            { href: "/leaderboard", label: "Leaderboard" },
-            { href: "/login", label: "Login" },
-            { href: "/register", label: "Register" },
+            { href: "/leaderboard", label: "Scores" },
+            { href: "/login", label: "Sign in" },
+            { href: "/register", label: "Create profile" },
           ].map((l) => (
             <Link
               key={l.href}

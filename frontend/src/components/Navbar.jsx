@@ -69,7 +69,7 @@ export default function Navbar() {
             </>
           ) : (
             <Link href="/register" className="btn-primary" style={{ padding: "0.5rem 1.2rem", fontSize: "0.8rem" }}>
-              Play Free
+              Start slicing
             </Link>
           ))}
         </nav>

@@ -20,20 +20,20 @@ const FRUITS = [
 
 /* ── Feature cards ───────────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: "🎮", title: "Classic Mode",        desc: "Slice fruits, dodge bombs, and protect your 3 lives. Difficulty ramps every 30 seconds.", color: "#00f5ff" },
-  { icon: "⚡", title: "Combo Multipliers",   desc: "Slice 3+ fruits in one swipe for ×2–×4 combo bonuses and sky-high scores.", color: "#39ff14" },
-  { icon: "💣", title: "Bombs & Penalties",   desc: "Hit a bomb and lose a life. Miss 3 fruits and it's game over — stay sharp!", color: "#ff006e" },
-  { icon: "🏆", title: "Global Leaderboard",  desc: "Scores are validated server-side and ranked globally. Claim your spot at the top.", color: "#ff8c00" },
-  { icon: "📊", title: "Personal Dashboard",  desc: "Track your highest score, best combo, total fruits sliced, and full game history.", color: "#00f5ff" },
-  { icon: "📱", title: "Mouse & Touch",       desc: "Play on desktop with mouse or on mobile with swipe gestures — fully responsive.", color: "#39ff14" },
+  { icon: "🎮", title: "One good mode",       desc: "Three lives, a pile of fruit, and bombs that really should not be touched. The speed picks up as you play.", color: "#00f5ff" },
+  { icon: "⚡", title: "Build a combo",       desc: "Catch a few fruits in the same swipe and your score starts moving quickly. The satisfying part.", color: "#39ff14" },
+  { icon: "💣", title: "Watch the bombs",     desc: "Bombs cost a life, and so do missed fruits. It is simple until the screen gets busy.", color: "#ff006e" },
+  { icon: "🏆", title: "Keep your best",      desc: "Finished runs are saved so you can see your best score and chase it next time.", color: "#ff8c00" },
+  { icon: "📊", title: "See your progress",   desc: "Your dashboard keeps track of scores, combos, sliced fruit, and the runs you have played.", color: "#00f5ff" },
+  { icon: "📱", title: "Play your way",       desc: "Use a mouse on a laptop or swipe on a phone. Both work the same once the fruit starts flying.", color: "#39ff14" },
 ];
 
 /* ── How-to steps ────────────────────────────────────────────────────────── */
 const STEPS = [
-  { n: "01", color: "#00f5ff", title: "Create Account",  desc: "Register in seconds — free forever. Your scores are saved automatically." },
-  { n: "02", color: "#39ff14", title: "Slice Fruits",    desc: "Click-drag or swipe across fruits to slice them. Each slice scores 1 point." },
-  { n: "03", color: "#ff8c00", title: "Chain Combos",    desc: "Cut 3+ fruits in one swipe to trigger combos up to ×4 multiplier." },
-  { n: "04", color: "#ff006e", title: "Top the Board",   desc: "Survive the longest, score the most, and claim your rank on the leaderboard." },
+  { n: "01", color: "#00f5ff", title: "Make a profile",  desc: "It only takes an email and a player name. This is how your scores stay yours." },
+  { n: "02", color: "#39ff14", title: "Start slicing",   desc: "Drag through the fruit with your mouse, or swipe across it on a phone." },
+  { n: "03", color: "#ff8c00", title: "Go for combos",   desc: "Try to catch three or more fruits in one clean swipe for a bigger score." },
+  { n: "04", color: "#ff006e", title: "Try again",       desc: "Your run is over when the lives are gone. Take a breath and beat your score." },
 ];
 
 /* ── Scroll-reveal hook ──────────────────────────────────────────────────── */
@@ -263,9 +263,9 @@ export default function HomePage() {
               lineHeight: 1.7,
             }}
           >
-            SLICE • COMBO • SURVIVE
+            A tiny fruit-slicing game for your next five-minute break.
             <br />
-            <span style={{ color: "rgba(255,255,255,0.85)" }}>Master the blade. Own the leaderboard.</span>
+            <span style={{ color: "rgba(255,255,255,0.85)" }}>How long can you keep the kitchen tidy?</span>
           </p>
 
           {/* CTA Buttons */}
@@ -359,7 +359,7 @@ export default function HomePage() {
               What&apos;s in the Game
             </h2>
             <p style={{ color: "#8892a4", maxWidth: "480px", margin: "0 auto", fontSize: "0.9rem", lineHeight: 1.6 }}>
-              A complete full-stack game — real auth, persistent scores, global leaderboard.
+              Made for quick breaks, suspiciously high scores, and “one more try.”
             </p>
           </div>
 
@@ -438,7 +438,7 @@ export default function HomePage() {
             >
               How to Play
             </h2>
-            <p style={{ color: "#8892a4", fontSize: "0.9rem" }}>Four simple steps to the top of the leaderboard.</p>
+            <p style={{ color: "#8892a4", fontSize: "0.9rem" }}>The rules are easy. Staying calm when the fruit speeds up is not.</p>
           </div>
 
           <div className="steps-grid" style={{
@@ -541,8 +541,8 @@ export default function HomePage() {
                 margin: "0 auto 1.5rem",
                 lineHeight: 1.7,
               }}>
-                Survive as long as possible. Slice every fruit — each miss costs a life.
-                Slice bombs carefully — each one costs a life. Difficulty escalates every 30 seconds.
+                Slice fruit, avoid bombs, and try not to panic when the pace picks up.
+                Every miss costs a life, so a little patience goes a long way.
               </p>
               <div style={{
                 display: "flex",
@@ -550,7 +550,7 @@ export default function HomePage() {
                 justifyContent: "center",
                 gap: "0.6rem",
               }}>
-                {["3 Lives", "Combo ×2–×4", "Bombs", "Escalating Speed", "Global Ranking"].map((tag) => (
+                {["3 Lives", "Combo ×2–×4", "Bombs", "Faster over time", "Saved scores"].map((tag) => (
                   <span
                     key={tag}
                     style={{

@@ -79,12 +79,12 @@ export default function AuthForm({ mode }) {
           <Image className="auth-brand-logo" src="/slice-storm-logo.png" alt="" width={80} height={80} priority />
           <span className="grad-text">SLICE STORM</span>
         </Link>
-        <p className="auth-kicker">{isRegister ? "CREATE YOUR PLAYER PROFILE" : "WELCOME BACK, PLAYER"}</p>
-        <h1 id="auth-title">{isRegister ? "Join the storm." : "Ready to slice?"}</h1>
+        <p className="auth-kicker">{isRegister ? "NEW PLAYER" : "WELCOME BACK"}</p>
+        <h1 id="auth-title">{isRegister ? "Make a player profile." : "Ready for another run?"}</h1>
         <p className="auth-subtitle">
           {isRegister
-            ? "Save your scores, track your combos, and compete on the leaderboard."
-            : "Sign in to continue your fruit-slicing run."}
+            ? "Save your scores and see how far you can get."
+            : "Sign in and get back to the fruit before it gets away."}
         </p>
 
         {error && <div className="auth-alert auth-alert-error" role="alert">{error}</div>}
