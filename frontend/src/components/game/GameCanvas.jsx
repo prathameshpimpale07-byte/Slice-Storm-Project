@@ -22,12 +22,12 @@ import {
 } from "@/game/audio";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   GameCanvas — Fruit spawning
+   GameCanvas — Fruit spawning and slicing
    ─────────────────
    • Client component with a full-screen HTML5 canvas
    • Canvas auto-resizes to its container
    • requestAnimationFrame loop with proper cleanup
-   • Placeholder HUD: score, combo, lives (readable on mobile)
+   • HUD: score, combo, lives (readable on mobile)
    • Overlays: main menu, pause, restart, game-over
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -47,28 +47,10 @@ const COMBO_MESSAGE_DURATION_MS = 900;
 const SCREEN_FLASH_DURATION_MS = 120;
 const BOMB_ANIMATION_DURATION_MS = 220;
 
-/* ── Background star particles for canvas ────────────────────────────────── */
-function createStars(count, w, h) {
-  const stars = [];
-  for (let i = 0; i < count; i++) {
-    stars.push({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: Math.random() * 1.5 + 0.3,
-      alpha: Math.random() * 0.5 + 0.2,
-      speed: Math.random() * 0.3 + 0.05,
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
-      twinkleDir: Math.random() > 0.5 ? 1 : -1,
-    });
-  }
-  return stars;
-}
-
 export default function GameCanvas() {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
-  const starsRef = useRef([]);
   const fruitsRef = useRef([]);
   const bombsRef = useRef([]);
   const lastFrameRef = useRef(null);
@@ -121,8 +103,6 @@ export default function GameCanvas() {
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Re-create stars on resize
-    starsRef.current = createStars(80, rect.width, rect.height);
   }, []);
 
   /* ── Animation loop ──────────────────────────────────────────────────── */
@@ -143,40 +123,9 @@ export default function GameCanvas() {
     // Clear canvas
     ctx.clearRect(0, 0, w, h);
 
-    // ── Draw background gradient ─────────────────────────────────────
-    const bgGrad = ctx.createRadialGradient(w * 0.3, h * 0.3, 0, w * 0.5, h * 0.5, w * 0.8);
-    bgGrad.addColorStop(0, "rgba(34,211,238,0.1)");
-    bgGrad.addColorStop(0.42, "rgba(139,92,246,0.08)");
-    bgGrad.addColorStop(0.72, "rgba(255,79,216,0.035)");
-    bgGrad.addColorStop(1, "rgba(5,8,22,1)");
-    ctx.fillStyle = bgGrad;
+    // Keep the play area quiet so the fruit and the swipe are easy to read.
+    ctx.fillStyle = "#101a29";
     ctx.fillRect(0, 0, w, h);
-
-    const horizon = ctx.createLinearGradient(0, 0, 0, h);
-    horizon.addColorStop(0, "rgba(12, 24, 54, .12)");
-    horizon.addColorStop(1, "rgba(3, 7, 18, .42)");
-    ctx.fillStyle = horizon;
-    ctx.fillRect(0, 0, w, h);
-
-    // ── Draw twinkling stars ─────────────────────────────────────────
-    starsRef.current.forEach((s) => {
-      // Twinkle animation
-      s.alpha += s.twinkleSpeed * s.twinkleDir;
-      if (s.alpha >= 0.7) { s.twinkleDir = -1; }
-      if (s.alpha <= 0.15) { s.twinkleDir = 1; }
-
-      // Slow drift downward
-      s.y += s.speed;
-      if (s.y > h + 5) {
-        s.y = -5;
-        s.x = Math.random() * w;
-      }
-
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(200,220,255,${s.alpha})`;
-      ctx.fill();
-    });
 
     const trailCutoff = timestamp - TRAIL_DURATION_MS;
     pointerTrailRef.current = pointerTrailRef.current.filter(
@@ -367,44 +316,6 @@ export default function GameCanvas() {
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
     }
-
-    // ── Draw subtle grid lines ───────────────────────────────────────
-    ctx.strokeStyle = "rgba(0,245,255,0.03)";
-    ctx.lineWidth = 0.5;
-    const gridSpacing = 60;
-    for (let x = 0; x < w; x += gridSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
-    }
-    for (let y = 0; y < h; y += gridSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
-
-    // ── Draw center "Ready" text when playing (placeholder) ──────────
-    if (gameStateRef.current === STATE.PLAYING) {
-      const pulse = Math.sin(timestamp * 0.002) * 0.15 + 0.85;
-      ctx.globalAlpha = 0.08 * pulse;
-      ctx.font = `bold ${Math.min(w * 0.12, 90)}px 'Exo 2', sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#00f5ff";
-      ctx.fillText("SLICE!", w / 2, h / 2);
-      ctx.globalAlpha = 1;
-    }
-
-    // ── Decorative border glow ───────────────────────────────────────
-    const borderGrad = ctx.createLinearGradient(0, 0, w, 0);
-    borderGrad.addColorStop(0, "rgba(0,245,255,0)");
-    borderGrad.addColorStop(0.5, "rgba(0,245,255,0.15)");
-    borderGrad.addColorStop(1, "rgba(0,245,255,0)");
-    ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0, 0, w, h);
 
     ctx.restore();
 
@@ -736,7 +647,8 @@ export default function GameCanvas() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "linear-gradient(to bottom, rgba(8,12,23,0.85) 0%, transparent 100%)",
+            background: "#0c1420",
+            borderBottom: "1px solid #2d435a",
             pointerEvents: "none",
           }}
         >
@@ -1115,38 +1027,25 @@ function Overlay({ children }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(8,12,23,0.85)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        background: "rgba(8,12,23,0.88)",
         padding: "1rem",
       }}
     >
       <div
         className="game-overlay-card"
         style={{
-          background: "rgba(15,20,40,0.7)",
-          backdropFilter: "blur(24px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.8)",
-          border: "1px solid rgba(0,245,255,0.12)",
-          borderRadius: "24px",
+          background: "#172437",
+          border: "1px solid #2d435a",
+          borderRadius: "10px",
           padding: "2.5rem 2rem",
           textAlign: "center",
           maxWidth: "400px",
           width: "100%",
           position: "relative",
           overflow: "hidden",
-          animation: "slideUp 0.4s cubic-bezier(.16,1,.3,1) forwards",
+          boxShadow: "0 10px 0 rgba(5, 12, 22, .3)",
         }}
       >
-        {/* Inner glow */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "radial-gradient(ellipse at 50% 0%, rgba(0,245,255,0.06) 0%, transparent 60%)",
-            pointerEvents: "none",
-          }}
-        />
         <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
           {children}
         </div>
@@ -1166,14 +1065,14 @@ function OverlayButton({ children, onClick, primary, outline, as: Component = "b
     gap: "0.4rem",
     width: "100%",
     padding: "0.75rem 1.5rem",
-    borderRadius: "12px",
-    fontFamily: "'Exo 2', sans-serif",
+    borderRadius: "6px",
+    fontFamily: "'Inter', sans-serif",
     fontWeight: 700,
     fontSize: "0.9rem",
-    letterSpacing: "0.04em",
+    letterSpacing: 0,
     textTransform: "uppercase",
     cursor: "pointer",
-    transition: "all 0.22s cubic-bezier(.4,0,.2,1)",
+    transition: "transform 0.15s ease, background 0.15s ease",
     textDecoration: "none",
     border: "none",
     outline: "none",
@@ -1181,16 +1080,16 @@ function OverlayButton({ children, onClick, primary, outline, as: Component = "b
 
   const primaryStyle = {
     ...baseStyle,
-    background: "linear-gradient(135deg, #00f5ff 0%, #0077ff 100%)",
+    background: "#72d6ef",
     color: "#080c17",
-    boxShadow: "0 4px 24px rgba(0,245,255,0.3)",
+    boxShadow: "3px 3px 0 #244052",
   };
 
   const outlineStyle = {
     ...baseStyle,
-    background: "rgba(0,245,255,0.05)",
-    color: "#00f5ff",
-    border: "1.5px solid rgba(0,245,255,0.3)",
+    background: "transparent",
+    color: "#d3e2ef",
+    border: "1px solid #53677d",
   };
 
   return (
@@ -1199,20 +1098,18 @@ function OverlayButton({ children, onClick, primary, outline, as: Component = "b
       style={primary ? primaryStyle : outlineStyle}
       onMouseEnter={(e) => {
         if (primary) {
-          e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
-          e.currentTarget.style.boxShadow = "0 8px 36px rgba(0,245,255,0.5)";
+          e.currentTarget.style.transform = "translate(-1px, -1px)";
+          e.currentTarget.style.boxShadow = "4px 4px 0 #244052";
         } else {
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.background = "rgba(0,245,255,0.1)";
-          e.currentTarget.style.boxShadow = "0 0 24px rgba(0,245,255,0.2)";
+          e.currentTarget.style.background = "#1f3449";
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0) scale(1)";
+        e.currentTarget.style.transform = "translate(0, 0)";
         if (primary) {
-          e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,245,255,0.3)";
+          e.currentTarget.style.boxShadow = "3px 3px 0 #244052";
         } else {
-          e.currentTarget.style.background = "rgba(0,245,255,0.05)";
+          e.currentTarget.style.background = "transparent";
           e.currentTarget.style.boxShadow = "none";
         }
       }}
