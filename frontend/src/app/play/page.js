@@ -9,6 +9,7 @@ export default function PlayPage() {
   return (
     <div
       id="play-page"
+      className="play-page-shell"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -19,7 +20,9 @@ export default function PlayPage() {
           "#080c17",
       }}
     >
-      <GameCanvas />
+      <div className="play-frame">
+        <GameCanvas />
+      </div>
     </div>
   );
 }
