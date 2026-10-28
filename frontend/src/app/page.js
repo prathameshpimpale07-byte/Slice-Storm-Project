@@ -149,6 +149,9 @@ export default function HomePage() {
             <br />
             <span style={{ color: "rgba(255,255,255,0.85)" }}>How long can you keep the kitchen tidy?</span>
           </p>
+          <p className="hero-note slide-up-delay-2">
+            <span aria-hidden="true">✦</span> Tip: short, clean swipes are easier to control.
+          </p>
 
           {/* CTA Buttons */}
           <div
@@ -509,7 +512,7 @@ export default function HomePage() {
               margin: "0 auto 2rem",
               lineHeight: 1.7,
             }}>
-              Create your free account. Your scores are saved, ranked globally, and waiting to be beaten.
+              Make a profile, play a quick round, and leave your mark on the score board.
             </p>
             <div style={{
               display: "flex",

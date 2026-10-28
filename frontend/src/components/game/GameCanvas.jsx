@@ -126,6 +126,14 @@ export default function GameCanvas() {
     // Keep the play area quiet so the fruit and the swipe are easy to read.
     ctx.fillStyle = "#101a29";
     ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "#0c1420";
+    ctx.fillRect(0, h - 18, w, 18);
+    ctx.strokeStyle = "#30465b";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, h - 18.5);
+    ctx.lineTo(w, h - 18.5);
+    ctx.stroke();
 
     const trailCutoff = timestamp - TRAIL_DURATION_MS;
     pointerTrailRef.current = pointerTrailRef.current.filter(
@@ -854,8 +862,13 @@ export default function GameCanvas() {
             maxWidth: "320px",
             lineHeight: 1.6,
           }}>
-            Slash fruits. Dodge bombs. Climb the leaderboard.
+            Fruit is good. Bombs are not. See how far you get.
           </p>
+          <div className="game-rules" aria-label="Game rules">
+            <span><b>3</b> lives</span>
+            <span><b>1</b> point per fruit</span>
+            <span>bombs cost a life</span>
+          </div>
           {startError && (
             <p role="alert" style={{ color: "#ff6b9d", fontSize: "0.8rem", marginBottom: "1rem" }}>
               {startError}
